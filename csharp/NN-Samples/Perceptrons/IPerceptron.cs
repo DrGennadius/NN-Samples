@@ -11,7 +11,7 @@ namespace NN_Samples.Perceptrons
 
         void BackPropagation(double[] input, double[] targetOutput, double[] realOutput, double learningRate);
 
-        double Train(TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError = true);
+        TrainStats Train(TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError = true);
 
         void TransferWeights(IPerceptron otherPerceptron);
 

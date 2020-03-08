@@ -70,6 +70,26 @@ namespace NN_Samples.Common
             return trainData;
         }
 
+        public static TrainData GenerateNANDDate()
+        {
+            TrainData trainData = new TrainData();
+            trainData.Inputs = new double[,]
+            {
+                { 0, 0 },
+                { 0, 1 },
+                { 1, 0 },
+                { 1, 1 }
+            };
+            trainData.Outputs = new double[,]
+            {
+                { 1 },
+                { 1 },
+                { 1 },
+                { 0 }
+            };
+            return trainData;
+        }
+
         public static TrainData GenerateMultiplicationDate()
         {
             TrainData trainData = new TrainData();

@@ -12,6 +12,7 @@ namespace NN_Samples_Console
         static void Main(string[] args)
         {
             ANDTest();
+            NANDTest();
             ORTest();
             XORTest();
             MultiplicationTest();
@@ -26,67 +27,112 @@ namespace NN_Samples_Console
         {
             var perceptron1 = new SimplePerceptron(2, 5, 1);
             var perceptron2 = new Perceptron(perceptron1);
+            var perceptron3 = new Perceptron2(perceptron1, 0.5);
 
             Console.WriteLine("\nSimple Perceptron (AND)");
             ANDTest(perceptron1);
 
             Console.WriteLine("\nPerceptron with bias (AND)");
             ANDTest(perceptron2);
+
+            Console.WriteLine("\nPerceptron with bias and momentum (AND)");
+            ANDTest(perceptron3);
+        }
+
+        static void NANDTest()
+        {
+            var perceptron1 = new SimplePerceptron(2, 5, 1);
+            var perceptron2 = new Perceptron(perceptron1);
+            var perceptron3 = new Perceptron2(perceptron1, 0.5);
+
+            Console.WriteLine("\nSimple Perceptron (NAND)");
+            NANDTest(perceptron1);
+
+            Console.WriteLine("\nPerceptron with bias (NAND)");
+            NANDTest(perceptron2);
+
+            Console.WriteLine("\nPerceptron with bias and momentum (NAND)");
+            NANDTest(perceptron3);
         }
 
         static void ORTest()
         {
             var perceptron1 = new SimplePerceptron(2, 5, 1);
             var perceptron2 = new Perceptron(perceptron1);
+            var perceptron3 = new Perceptron2(perceptron1, 0.5);
 
             Console.WriteLine("\nSimple Perceptron (OR)");
             ORTest(perceptron1);
 
             Console.WriteLine("\nPerceptron with bias (OR)");
             ORTest(perceptron2);
+
+            Console.WriteLine("\nPerceptron with bias and momentum (OR)");
+            ORTest(perceptron3);
         }
         
         static void XORTest()
         {
             var perceptron1 = new SimplePerceptron(2, 5, 1);
             var perceptron2 = new Perceptron(perceptron1);
+            var perceptron3 = new Perceptron2(perceptron1, 0.5);
 
             Console.WriteLine("\nSimple Perceptron (XOR)");
             XORTest(perceptron1);
 
             Console.WriteLine("\nPerceptron with bias (XOR)");
             XORTest(perceptron2);
+
+            Console.WriteLine("\nPerceptron with bias and momentum (XOR)");
+            XORTest(perceptron3);
         }
 
         static void MultiplicationTest()
         {
             var perceptron1 = new SimplePerceptron(2, 64, 1);
             var perceptron2 = new Perceptron(perceptron1);
+            var perceptron3 = new Perceptron2(perceptron1, 0.5);
 
             Console.WriteLine("\nSimple Perceptron (Multiplication)");
             MultiplicationTest(perceptron1);
 
             Console.WriteLine("\nPerceptron with bias (Multiplication)");
             MultiplicationTest(perceptron2);
+
+            Console.WriteLine("\nPerceptron with bias and momentum (Multiplication)");
+            MultiplicationTest(perceptron3);
         }
 
         static void SimpleNumbersTest()
         {
             var perceptron1 = new SimplePerceptron(35, 128, 32, 1);
             var perceptron2 = new Perceptron(perceptron1);
+            var perceptron3 = new Perceptron2(perceptron1, 0.5);
 
             Console.WriteLine("\nSimple Perceptron (Simple Numbers)");
             SimpleNumbersTest(perceptron1);
 
             Console.WriteLine("\nPerceptron with bias (Simple Numbers)");
             SimpleNumbersTest(perceptron2);
+
+            Console.WriteLine("\nPerceptron with bias and momentum (Simple Numbers)");
+            SimpleNumbersTest(perceptron3);
         }
 
         static void ANDTest(IPerceptron perceptron)
         {
             TrainData trainData = TrainData.GenerateANDDate();
-            double lastError = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
-            Console.WriteLine("Last error: {0}", lastError);
+            TrainStats trainStats = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
+            Console.WriteLine(trainStats);
+
+            ReadyLogicModelTest(perceptron);
+        }
+
+        static void NANDTest(IPerceptron perceptron)
+        {
+            TrainData trainData = TrainData.GenerateNANDDate();
+            TrainStats trainStats = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
+            Console.WriteLine(trainStats);
 
             ReadyLogicModelTest(perceptron);
         }
@@ -94,8 +140,8 @@ namespace NN_Samples_Console
         static void ORTest(IPerceptron perceptron)
         {
             TrainData trainData = TrainData.GenerateORDate();
-            double lastError = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
-            Console.WriteLine("Last error: {0}", lastError);
+            TrainStats trainStats = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
+            Console.WriteLine(trainStats);
 
             ReadyLogicModelTest(perceptron);
         }
@@ -103,8 +149,8 @@ namespace NN_Samples_Console
         static void XORTest(IPerceptron perceptron)
         {
             TrainData trainData = TrainData.GenerateXORDate();
-            double lastError = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
-            Console.WriteLine("Last error: {0}", lastError);
+            TrainStats trainStats = perceptron.Train(trainData, 0.05, 0.2, 400000, false);
+            Console.WriteLine(trainStats);
 
             ReadyLogicModelTest(perceptron);
         }
@@ -118,8 +164,8 @@ namespace NN_Samples_Console
             CommonFunctions.GetMinMax(trainDataOrigin.Outputs, out double yMin, out double yMax);
 
             Console.WriteLine("\nMultiplication training...");
-            double lastError = perceptron.Train(trainDataNormalized, 0.005, 0.1, 100000, false);
-            Console.WriteLine("Last error: {0}", lastError);
+            TrainStats trainStats = perceptron.Train(trainDataNormalized, 0.005, 0.1, 100000, false);
+            Console.WriteLine(trainStats);
 
             Console.WriteLine("\nMultiplication result");
             double[,] multiplicationTestData = new double[,]
@@ -139,8 +185,8 @@ namespace NN_Samples_Console
 
             Console.WriteLine("\nSimpleNumbers training...");
             CommonFunctions.GetMinMax(trainDataOrigin.Inputs, out double xMin, out double xMax);
-            double lastError = perceptron.Train(trainDataNormalized, 0.00001, 0.2, 10000, false);
-            Console.WriteLine("Last error: {0}", lastError);
+            TrainStats trainStats = perceptron.Train(trainDataNormalized, 0.00001, 0.2, 10000, false);
+            Console.WriteLine(trainStats);
 
             Console.WriteLine("\nSimpleNumbers result");
             double[] row = new double[trainDataOrigin.Inputs.GetLength(1)];
@@ -188,6 +234,7 @@ namespace NN_Samples_Console
 
         static void RunAlternativeVariant1()
         {
+            Console.WriteLine("\nAlternative Variant 1:");
             Console.WriteLine("\nXOR\n{0}", SampleAV1.RunXOR());
             Console.WriteLine("\nAND\n{0}", SampleAV1.RunAND());
             Console.WriteLine("\nOR\n{0}", SampleAV1.RunOR());

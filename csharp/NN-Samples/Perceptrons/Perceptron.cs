@@ -112,7 +112,7 @@ namespace NN_Samples.Perceptrons
             }
         }
 
-        public double Train(TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError = true)
+        public TrainStats Train(TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError = true)
         {
             double error = double.MaxValue;
             int rowCountX = trainData.Inputs.GetLength(0);
@@ -151,7 +151,12 @@ namespace NN_Samples.Perceptrons
                 }
             }
             while (error > targetError && epoch <= maxEpoch);
-            return error;
+            TrainStats trainStats = new TrainStats
+            {
+                LastError = error,
+                NumberOfEpoch = epoch
+            };
+            return trainStats;
         }
 
         public void TransferWeights(IPerceptron otherPerceptron)

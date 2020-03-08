@@ -5,18 +5,35 @@ using System.Text;
 
 namespace NN_Samples.Perceptrons
 {
-    public class SimplePerceptron : IPerceptron
+    public class Perceptron2 : IPerceptron
     {
-        SimpleLayer[] Layers;
+        private Layer2[] Layers;
 
-        public SimplePerceptron(params int[] neuronsPerLayer)
+        public double MomentumRate = 0.5;
+
+        public Perceptron2(params int[] neuronsPerLayer)
         {
-            Layers = new SimpleLayer[neuronsPerLayer.Length];
+            Layers = new Layer2[neuronsPerLayer.Length];
             Random r = new Random();
 
             for (int i = 0; i < neuronsPerLayer.Length; i++)
             {
-                Layers[i] = new SimpleLayer(neuronsPerLayer[i], i == 0 ? neuronsPerLayer[i] : neuronsPerLayer[i - 1], r);
+                Layers[i] = new Layer2(neuronsPerLayer[i], i == 0 ? neuronsPerLayer[i] : neuronsPerLayer[i - 1], r);
+            }
+        }
+
+        public Perceptron2(IPerceptron perceptron, double momentumRate)
+        {
+            double[][][] otherWeights = perceptron.GetWeights();
+            int layerCount = otherWeights.GetLength(0);
+
+            Layers = new Layer2[layerCount];
+            MomentumRate = momentumRate;
+            Random r = new Random();
+
+            for (int i = 0; i < layerCount; i++)
+            {
+                Layers[i] = new Layer2(otherWeights[i], r);
             }
         }
 
@@ -50,9 +67,9 @@ namespace NN_Samples.Perceptrons
                 var layer = Layers[i].Neurons;
                 var nextLayer = Layers[i + 1].Neurons;
 
-                // Errors for the layer.
+                // Errors for the previous layer.
                 errors[i] = new double[layer.Length];
-                
+
                 for (int c = 0; c < layer.Length; c++)
                 {
                     double sum = 0.0;
@@ -66,7 +83,7 @@ namespace NN_Samples.Perceptrons
                 }
             }
 
-            // Correcting weights in first layer.
+            // Correcting weights in first layer and bias.
             for (int n = 0; n < Layers[0].Neurons.Length; n++)
             {
                 var neuron = Layers[0].Neurons[n];
@@ -74,11 +91,14 @@ namespace NN_Samples.Perceptrons
                 for (int w = 0; w < neuron.Weights.Length; w++)
                 {
                     double delta = input[n] * sigma;
-                    neuron.Weights[w] += delta * learningRate;
+                    double change = delta * learningRate + neuron.PreviousChanges[w] * MomentumRate;
+                    neuron.Weights[w] += change;
+                    neuron.PreviousChanges[w] = change;
                 }
+                neuron.Bias += sigma * learningRate;
             }
 
-            // Correcting other weights.
+            // Correcting other weights and bias.
             for (int i = 1; i < layerCount; i++)
             {
                 var layer = Layers[i].Neurons;
@@ -90,8 +110,11 @@ namespace NN_Samples.Perceptrons
                     for (int w = 0; w < neuron.Weights.Length; w++)
                     {
                         double delta = previousLayer[w].Output * sigma;
-                        neuron.Weights[w] += delta * learningRate;
+                        double change = delta * learningRate + neuron.PreviousChanges[w] * MomentumRate;
+                        neuron.Weights[w] += change;
+                        neuron.PreviousChanges[w] = change;
                     }
+                    neuron.Bias += sigma * learningRate;
                 }
             }
         }
