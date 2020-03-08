@@ -1,12 +1,20 @@
-﻿using System;
+﻿using NN_Samples.Common;
+using System;
 
-namespace NN_Samples
+namespace NN_Samples.Perceptrons
 {
     public class Neuron
     {
         public double[] Weights;
         public double Output;
+        public double DerivatedOutput;
         public double Bias;
+
+        public Neuron(double[] neuronWeights, Random r)
+        {
+            Bias = 10 * r.NextDouble() - 5;
+            Weights = neuronWeights;
+        }
 
         public Neuron(int numberOfInputs, Random r)
         {
@@ -20,15 +28,15 @@ namespace NN_Samples
 
         public double FeedForward(double[] input)
         {
-            double sum = 1.0;
-            //double sum = 0.0;
+            double sum = Bias;
 
             for (int i = 0; i < Weights.Length; i++)
             {
                 sum += Weights[i] * input[i];
             }
-
+            
             Output = ActivationFunctions.Sigmoid(sum);
+            DerivatedOutput = ActivationFunctions.SigmoidDerivated(Output);
             return Output;
         }
     }

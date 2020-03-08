@@ -2,11 +2,21 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples
+namespace NN_Samples.Perceptrons
 {
     public class Layer
     {
         public Neuron[] Neurons;
+
+        public Layer(double[][] layerWeights, Random r)
+        {
+            int neuronCount = layerWeights.GetLength(0);
+            Neurons = new Neuron[neuronCount];
+            for (int i = 0; i < neuronCount; i++)
+            {
+                Neurons[i] = new Neuron(layerWeights[i], r);
+            }
+        }
 
         public Layer(int numberOfNeurons, int numberOfInputs, Random r)
         {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples
+namespace NN_Samples.Common
 {
     public class ActivationFunctions
     {

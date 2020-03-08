@@ -2,36 +2,36 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples
+namespace NN_Samples.Common
 {
     public class CommonFunctions
     {
-        public static double GeneralError(double[,] realOutputs, double[,] goalOutputs)
+        public static double GeneralError(double[,] realOutputs, double[,] targetOutputs)
         {
             double err = 0;
             for (int i = 0; i < realOutputs.GetLength(0); i++)
             {
                 double[] realOutputsRow = new double[realOutputs.GetLength(1)];
-                double[] goalOutputsRow = new double[goalOutputs.GetLength(1)];
+                double[] goalOutputsRow = new double[targetOutputs.GetLength(1)];
                 for (var c = 0; c < realOutputs.GetLength(1); c++)
                 {
                     realOutputsRow[c] = realOutputs[i, c];
                 }
-                for (var c = 0; c < goalOutputs.GetLength(1); c++)
+                for (var c = 0; c < targetOutputs.GetLength(1); c++)
                 {
-                    goalOutputsRow[c] = goalOutputs[i, c];
+                    goalOutputsRow[c] = targetOutputs[i, c];
                 }
                 err += IndividualError(realOutputsRow, goalOutputsRow);
             }
             return err;
         }
 
-        public static double IndividualError(double[] realOutputs, double[] goalOutputs)
+        public static double IndividualError(double[] realOutputs, double[] targetOutputs)
         {
             double err = 0;
             for (int i = 0; i < realOutputs.Length; i++)
             {
-                err += Math.Pow(realOutputs[i] - goalOutputs[i], 2);
+                err += Math.Pow(realOutputs[i] - targetOutputs[i], 2);
             }
             return err;
         }
