@@ -4,26 +4,26 @@ using System.Text;
 
 namespace NN_Samples.Perceptrons
 {
-    public class Layer2
+    public class SimpleLayer2
     {
-        public Neuron2[] Neurons;
+        public SimpleNeuron2[] Neurons;
 
-        public Layer2(double[][] layerWeights, Random r)
+        public SimpleLayer2(double[][] layerWeights, Random r)
         {
             int neuronCount = layerWeights.GetLength(0);
-            Neurons = new Neuron2[neuronCount];
+            Neurons = new SimpleNeuron2[neuronCount];
             for (int i = 0; i < neuronCount; i++)
             {
-                Neurons[i] = new Neuron2(layerWeights[i], r);
+                Neurons[i] = new SimpleNeuron2(layerWeights[i], r);
             }
         }
 
-        public Layer2(int numberOfNeurons, int numberOfInputs, Random r)
+        public SimpleLayer2(int numberOfNeurons, int numberOfInputs, Random r)
         {
-            Neurons = new Neuron2[numberOfNeurons];
+            Neurons = new SimpleNeuron2[numberOfNeurons];
             for (int i = 0; i < numberOfNeurons; i++)
             {
-                Neurons[i] = new Neuron2(numberOfInputs, r);
+                Neurons[i] = new SimpleNeuron2(numberOfInputs, r);
             }
         }
 

@@ -2,6 +2,8 @@
  * Based on https://programforyou.ru/poleznoe/pishem-neuroset-pryamogo-rasprostraneniya *
  ****************************************************************************************/
 
+using NN_Samples.Common;
+using NN_Samples.Perceptrons.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,17 +26,17 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
         private LayerT[] LayerValues; // values on each layer
         private VectorAV1[] Deltas; // error deltas on each layer
 
-        private int layerCount; // number of layers
+        private int LayerCount; // number of layers
 
         public PerceptronAV1(int[] sizes)
         {
             Random random = new Random(DateTime.Now.Millisecond);
 
-            layerCount = sizes.Length - 1;
+            LayerCount = sizes.Length - 1;
 
-            Weights = new MatrixAV1[layerCount];
-            LayerValues = new LayerT[layerCount];
-            Deltas = new VectorAV1[layerCount];
+            Weights = new MatrixAV1[LayerCount];
+            LayerValues = new LayerT[LayerCount];
+            Deltas = new VectorAV1[LayerCount];
 
             for (int k = 1; k < sizes.Length; k++)
             {
@@ -47,10 +49,38 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
                 Deltas[k - 1] = new VectorAV1(sizes[k]);
             }
         }
-        
+
+        public PerceptronAV1(IPerceptron perceptron)
+        {
+            double[][][] otherWeights = perceptron.GetWeights();
+            LayerCount = otherWeights.Length;
+
+            Weights = new MatrixAV1[LayerCount];
+            LayerValues = new LayerT[LayerCount];
+            Deltas = new VectorAV1[LayerCount];
+
+            int[] sizes = new int[LayerCount + 1];
+            sizes[0] = otherWeights[0][0].Length;
+            for (int i = 1; i <= LayerCount; i++)
+            {
+                sizes[i] = otherWeights[i - 1].Length;
+            }
+
+            for (int i = 1; i < sizes.Length; i++)
+            {
+                Weights[i - 1] = new MatrixAV1(otherWeights[i - 1]);
+
+                LayerValues[i - 1].Input = new VectorAV1(sizes[i - 1]);
+                LayerValues[i - 1].Output = new VectorAV1(sizes[i]);
+                LayerValues[i - 1].DerivatedOutput = new VectorAV1(sizes[i]);
+
+                Deltas[i - 1] = new VectorAV1(sizes[i]);
+            }
+        }
+
         public VectorAV1 Forward(VectorAV1 input)
         {
-            for (int k = 0; k < layerCount; k++)
+            for (int k = 0; k < LayerCount; k++)
             {
                 if (k == 0)
                 {
@@ -90,12 +120,12 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
                 }
             }
 
-            return LayerValues[layerCount - 1].Output;
+            return LayerValues[LayerCount - 1].Output;
         }
 
-        private void Backward(VectorAV1 output, ref double error)
+        public void Backward(VectorAV1 output, ref double error)
         {
-            int last = layerCount - 1;
+            int last = LayerCount - 1;
 
             error = 0;
 
@@ -108,7 +138,7 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
             }
 
             // Calculate each previous delta based on the current one
-            // by multiplying by the transposed matrix
+            // by multiplying by the transposed matrix.
             for (int k = last; k > 0; k--)
             {
                 for (int i = 0; i < Weights[k].ColumnSize; i++)
@@ -130,9 +160,9 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
         /// Update weights
         /// </summary>
         /// <param name="alpha">Learning rate</param>
-        private void UpdateWeights(double alpha)
+        public void UpdateWeights(double alpha)
         {
-            for (int k = 0; k < layerCount; k++)
+            for (int k = 0; k < LayerCount; k++)
             {
                 for (int i = 0; i < Weights[k].RowSize; i++)
                 {
@@ -152,7 +182,7 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
         /// <param name="alpha">Learning rate</param>
         /// <param name="eps">Target error</param>
         /// <param name="epochs">Epoch number limit</param>
-        public void Train(VectorAV1[] X, VectorAV1[] Y, double alpha, double eps, int epochs)
+        public TrainStats Train(VectorAV1[] X, VectorAV1[] Y, double alpha, double eps, int epochs)
         {
             int epoch = 1; // номер эпохи
 
@@ -173,7 +203,12 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
                 // Console.WriteLine("epoch: {0}, error: {1}", epoch, error);
 
                 epoch++;
-            } while (epoch <= epochs && error > eps);
+            } while (epoch < epochs && error > eps);
+            return new TrainStats
+            {
+                LastError = error,
+                NumberOfEpoch = epoch
+            };
         }
     }
 }

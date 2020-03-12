@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NN_Samples.Common;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -33,6 +34,16 @@ namespace NN_Samples.Perceptrons
             for (int i = 0; i < Neurons.Length; i++)
             {
                 output[i] = Neurons[i].FeedForward(input);
+            }
+            return output;
+        }
+
+        public double[] FeedForward(ActivationFunction activationFunction, double[] input)
+        {
+            double[] output = new double[Neurons.Length];
+            for (int i = 0; i < Neurons.Length; i++)
+            {
+                output[i] = Neurons[i].FeedForward(activationFunction, input);
             }
             return output;
         }

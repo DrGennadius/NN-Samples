@@ -8,6 +8,16 @@ namespace NN_Samples.Perceptrons
     {
         public SimpleNeuron[] Neurons;
 
+        public SimpleLayer(double[][] layerWeights)
+        {
+            int neuronCount = layerWeights.GetLength(0);
+            Neurons = new SimpleNeuron[neuronCount];
+            for (int i = 0; i < neuronCount; i++)
+            {
+                Neurons[i] = new SimpleNeuron(layerWeights[i]);
+            }
+        }
+
         public SimpleLayer(int numberOfNeurons, int numberOfInputs, Random r)
         {
             Neurons = new SimpleNeuron[numberOfNeurons];

@@ -19,7 +19,7 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
         public int ColumnSize;
 
         /// <summary>
-        /// Creation of a matrix of a given size and filling with random numbers from the interval (-0.5, 0.5)
+        /// Creation of a matrix of a given size and filling with random numbers from the interval (-0.5, 0.5).
         /// </summary>
         /// <param name="rowSize"></param>
         /// <param name="columnSize"></param>
@@ -41,7 +41,19 @@ namespace NN_Samples.Perceptrons.Alternatives.V1
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Creation of a matrix by data.
+        /// </summary>
+        /// <param name="data"></param>
+        public MatrixAV1(double[][] data)
+        {
+            Values = data;
+
+            RowSize = data.Length;
+            ColumnSize = data[0].Length;
+        }
+
         public double this[int i, int j]
         {
             get { return Values[i][j]; }

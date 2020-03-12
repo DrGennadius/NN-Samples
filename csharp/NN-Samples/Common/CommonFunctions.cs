@@ -6,9 +6,26 @@ namespace NN_Samples.Common
 {
     public class CommonFunctions
     {
-        public static double GeneralError(double[,] realOutputs, double[,] targetOutputs)
+        /// <summary>
+        /// Mean Square Error.
+        /// </summary>
+        /// <param name="realOutputs"></param>
+        /// <param name="targetOutputs"></param>
+        /// <returns></returns>
+        public static double MSE(double[] realOutputs, double[] targetOutputs)
         {
-            double err = 0;
+            double error = 0;
+            for (int i = 0; i < realOutputs.Length; i++)
+            {
+                double e = targetOutputs[i] - realOutputs[i];
+                error += e * e;
+            }
+            return error / realOutputs.Length;
+        }
+
+        public static double MeanBatchMSE(double[,] realOutputs, double[,] targetOutputs)
+        {
+            double error = 0;
             for (int i = 0; i < realOutputs.GetLength(0); i++)
             {
                 double[] realOutputsRow = new double[realOutputs.GetLength(1)];
@@ -21,19 +38,39 @@ namespace NN_Samples.Common
                 {
                     goalOutputsRow[c] = targetOutputs[i, c];
                 }
-                err += IndividualError(realOutputsRow, goalOutputsRow);
+                error += MSE(realOutputsRow, goalOutputsRow);
             }
-            return err;
+            return error / realOutputs.GetLength(0);
+        }
+
+        public static double GeneralError(double[,] realOutputs, double[,] targetOutputs)
+        {
+            double error = 0;
+            for (int i = 0; i < realOutputs.GetLength(0); i++)
+            {
+                double[] realOutputsRow = new double[realOutputs.GetLength(1)];
+                double[] goalOutputsRow = new double[targetOutputs.GetLength(1)];
+                for (var c = 0; c < realOutputs.GetLength(1); c++)
+                {
+                    realOutputsRow[c] = realOutputs[i, c];
+                }
+                for (var c = 0; c < targetOutputs.GetLength(1); c++)
+                {
+                    goalOutputsRow[c] = targetOutputs[i, c];
+                }
+                error += IndividualError(realOutputsRow, goalOutputsRow);
+            }
+            return error;
         }
 
         public static double IndividualError(double[] realOutputs, double[] targetOutputs)
         {
-            double err = 0;
+            double error = 0;
             for (int i = 0; i < realOutputs.Length; i++)
             {
-                err += Math.Pow(realOutputs[i] - targetOutputs[i], 2);
+                error += Math.Pow(realOutputs[i] - targetOutputs[i], 2);
             }
-            return err;
+            return error;
         }
 
         public static void GetMinMax(double[] values, out double min, out double max)
@@ -75,11 +112,37 @@ namespace NN_Samples.Common
             return newValues;
         }
 
+        /// <summary>
+        /// Normalize value to range [0,1].
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         public static double Normalize(double val, double min, double max)
         {
             return (val - min) / (max - min);
         }
 
+        /// <summary>
+        /// Normalize value with scale from range [<paramref name="rangeMin"/>,<paramref name="rangeMax"/>] to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
+        /// </summary>
+        /// <param name="val">Value</param>
+        /// <param name="rangeMin">Range min</param>
+        /// <param name="rangeMax">Range max</param>
+        /// <param name="scaledRangeMin">Scaled range min</param>
+        /// <param name="scaledRangeMax">Scaled range max</param>
+        /// <returns></returns>
+        public static double Scale(double val, double rangeMin, double rangeMax, double scaledRangeMin, double scaledRangeMax)
+        {
+            return scaledRangeMin + ((val - rangeMin) * (scaledRangeMax - scaledRangeMin) / (rangeMax - rangeMin));
+        }
+
+        /// <summary>
+        /// Normalize values to range [0,1].
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
         public static double[] Normalize(double[] values)
         {
             double[] normalizedValues = new double[values.Length];
@@ -91,6 +154,29 @@ namespace NN_Samples.Common
             return normalizedValues;
         }
 
+        /// <summary>
+        /// Normalize values with scale to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="scaledRangeMin"></param>
+        /// <param name="scaledRangeMax"></param>
+        /// <returns></returns>
+        public static double[] Normalize(double[] values, double scaledRangeMin, double scaledRangeMax)
+        {
+            double[] normalizedValues = new double[values.Length];
+            GetMinMax(values, out double rangeMin, out double rangeMax);
+            for (int i = 0; i < values.Length; i++)
+            {
+                normalizedValues[i] = Scale(values[i], rangeMin, rangeMax, scaledRangeMin, scaledRangeMax);
+            }
+            return normalizedValues;
+        }
+
+        /// <summary>
+        /// Normalize values to range [0,1].
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
         public static double[,] Normalize(double[,] values)
         {
             int size1 = values.GetLength(0);
@@ -107,6 +193,34 @@ namespace NN_Samples.Common
             return normalizedValues;
         }
 
+        /// <summary>
+        /// Normalize values with scale to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="scaledRangeMin"></param>
+        /// <param name="scaledRangeMax"></param>
+        /// <returns></returns>
+        public static double[,] Normalize(double[,] values, double scaledRangeMin, double scaledRangeMax)
+        {
+            int size1 = values.GetLength(0);
+            int size2 = values.GetLength(1);
+            double[] flattenNormalizedValues = Normalize(Flatten(values), scaledRangeMin, scaledRangeMax);
+            double[,] normalizedValues = new double[size1, size2];
+            for (int i = 0; i < size1; i++)
+            {
+                for (int k = 0; k < size2; k++)
+                {
+                    normalizedValues[i, k] = flattenNormalizedValues[i * size2 + k];
+                }
+            }
+            return normalizedValues;
+        }
+
+        /// <summary>
+        /// Normalize values into <see cref="TrainData"/> to range [0,1].
+        /// </summary>
+        /// <param name="trainData"></param>
+        /// <returns></returns>
         public static TrainData NormalizeTrainData(TrainData trainData)
         {
             trainData.Inputs = Normalize(trainData.Inputs);
@@ -114,12 +228,48 @@ namespace NN_Samples.Common
             return trainData;
         }
 
+        /// <summary>
+        /// Create new <see cref="TrainData"/> instance with normalized values into origin <see cref="TrainData"/> to range [0,1].
+        /// </summary>
+        /// <param name="trainData"></param>
+        /// <returns></returns>
         public static TrainData CreateNewNormalizeTrainData(TrainData trainData)
         {
             TrainData newTrainData = new TrainData();
             newTrainData.Inputs = Normalize(trainData.Inputs);
             newTrainData.Outputs = Normalize(trainData.Outputs);
             return newTrainData;
+        }
+
+        /// <summary>
+        /// Create new <see cref="TrainData"/> instance with normalized values into origin <see cref="TrainData"/> with scale range for separate input and output.
+        /// </summary>
+        /// <param name="trainData"></param>
+        /// <param name="scaledRangeInputMin"></param>
+        /// <param name="scaledRangeInputMax"></param>
+        /// <param name="scaledRangeOutputMin"></param>
+        /// <param name="scaledRangeOutputMax"></param>
+        /// <returns></returns>
+        public static TrainData CreateNewNormalizeTrainData(TrainData trainData, 
+            double scaledRangeInputMin, double scaledRangeInputMax, 
+            double scaledRangeOutputMin, double scaledRangeOutputMax)
+        {
+            TrainData newTrainData = new TrainData();
+            newTrainData.Inputs = Normalize(trainData.Inputs, scaledRangeInputMin, scaledRangeInputMax);
+            newTrainData.Outputs = Normalize(trainData.Outputs, scaledRangeOutputMin, scaledRangeOutputMax);
+            return newTrainData;
+        }
+
+        /// <summary>
+        /// Create new <see cref="TrainData"/> instance with normalized values into origin <see cref="TrainData"/> with scale range for input and output.
+        /// </summary>
+        /// <param name="trainData"></param>
+        /// <param name="scaledRangeMin"></param>
+        /// <param name="scaledRangeMax"></param>
+        /// <returns></returns>
+        public static TrainData CreateNewNormalizeTrainData(TrainData trainData, double scaledRangeMin, double scaledRangeMax)
+        {
+            return CreateNewNormalizeTrainData(trainData, scaledRangeMin, scaledRangeMax, scaledRangeMin, scaledRangeMax);
         }
 
         public static double[] Flatten(double[,] values)

@@ -1,96 +1,114 @@
 ﻿using NN_Samples.Common;
+using NN_Samples.Perceptrons.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace NN_Samples.Perceptrons
 {
+    /// <summary>
+    /// Simple perceptron.
+    /// </summary>
     public class SimplePerceptron : IPerceptron
     {
         SimpleLayer[] Layers;
 
         public SimplePerceptron(params int[] neuronsPerLayer)
+            : this(neuronsPerLayer, new Random())
         {
-            Layers = new SimpleLayer[neuronsPerLayer.Length];
-            Random r = new Random();
+        }
 
-            for (int i = 0; i < neuronsPerLayer.Length; i++)
+        public SimplePerceptron(int[] neuronsPerLayer, Random random)
+        {
+            Layers = new SimpleLayer[neuronsPerLayer.Length - 1];
+
+            for (int i = 1; i < neuronsPerLayer.Length; i++)
             {
-                Layers[i] = new SimpleLayer(neuronsPerLayer[i], i == 0 ? neuronsPerLayer[i] : neuronsPerLayer[i - 1], r);
+                Layers[i - 1] = new SimpleLayer(neuronsPerLayer[i], neuronsPerLayer[i - 1], random);
+            }
+        }
+
+        public SimplePerceptron(IPerceptron perceptron)
+        {
+            double[][][] otherWeights = perceptron.GetWeights();
+            int layerCount = otherWeights.GetLength(0);
+
+            Layers = new SimpleLayer[layerCount];
+
+            for (int i = 0; i < layerCount; i++)
+            {
+                Layers[i] = new SimpleLayer(otherWeights[i]);
             }
         }
 
         public double[] FeedForward(double[] input)
         {
-            double[] outputs = new double[0];
-            for (int i = 1; i < Layers.Length; i++)
+            double[] result = input;
+            for (int i = 0; i < Layers.Length; i++)
             {
-                outputs = Layers[i].FeedForward(input);
-                input = outputs;
+                result = Layers[i].FeedForward(result);
             }
-            return outputs;
+            return result;
         }
 
         public void BackPropagation(double[] input, double[] targetOutput, double[] realOutput, double learningRate)
         {
-            double[][] errors = new double[Layers.GetLength(0)][];
-            int layerCount = Layers.GetLength(0);
+            double[][] deltas = new double[Layers.Length][];
+            int lastLayerIndex = Layers.Length - 1;
 
             // From end.
-            errors[layerCount - 1] = new double[Layers[layerCount - 1].Neurons.Length];
+            deltas[lastLayerIndex] = new double[Layers[lastLayerIndex].Neurons.Length];
             for (int i = 0; i < targetOutput.Length; i++)
             {
                 // Difference between goal output and real output elements.
-                errors[layerCount - 1][i] = targetOutput[i] - realOutput[i];
+                double e = Layers[lastLayerIndex].Neurons[i].Output - targetOutput[i];
+                deltas[lastLayerIndex][i] = e * Layers[lastLayerIndex].Neurons[i].DerivatedOutput;
             }
 
-            // Looping relative to the previous layer to the next layer.
-            for (int i = layerCount - 2; i >= 0; i--)
+            // Calculate each previous delta based on the current one
+            // by multiplying by the transposed matrix.
+            for (int k = lastLayerIndex; k > 0; k--)
             {
-                var layer = Layers[i].Neurons;
-                var nextLayer = Layers[i + 1].Neurons;
-
-                // Errors for the layer.
-                errors[i] = new double[layer.Length];
+                var layer = Layers[k].Neurons;
+                var previousLayer = Layers[k - 1].Neurons;
                 
-                for (int c = 0; c < layer.Length; c++)
+                deltas[k - 1] = new double[previousLayer.Length];
+
+                for (int i = 0; i < previousLayer.Length; i++)
                 {
-                    double sum = 0.0;
-                    for (int n = 0; n < nextLayer.Length; n++)
+                    deltas[k - 1][i] = 0.0;
+                }
+                for (int i = 0; i < layer.Length; i++)
+                {
+                    for (int j = 0; j < layer[i].Weights.Length; j++)
                     {
-                        double w = nextLayer[n].Weights[c];
-                        double e = errors[i + 1][n];
-                        sum += w * e;
+                        double w = layer[i].Weights[j];
+                        double d = deltas[k][i];
+                        deltas[k - 1][j] += w * d * previousLayer[j].DerivatedOutput;
                     }
-                    errors[i][c] = sum;
                 }
+
+                //for (int i = 0; i < layer[0].Weights.Length; i++)
+                //{
+                //    deltas[k - 1][i] = 0;
+                //    for (int j = 0; j < layer.Length; j++)
+                //    {
+                //        deltas[k - 1][i] += Layers[k].Neurons[j].Weights[i] * deltas[k][j];
+                //    }
+                //    deltas[k - 1][i] *= Layers[k - 1].Neurons[i].DerivatedOutput;
+                //}
             }
 
-            // Correcting weights in first layer.
-            for (int n = 0; n < Layers[0].Neurons.Length; n++)
-            {
-                var neuron = Layers[0].Neurons[n];
-                double sigma = errors[0][n] * neuron.DerivatedOutput;
-                for (int w = 0; w < neuron.Weights.Length; w++)
-                {
-                    double delta = input[n] * sigma;
-                    neuron.Weights[w] += delta * learningRate;
-                }
-            }
-
-            // Correcting other weights.
-            for (int i = 1; i < layerCount; i++)
+            // Correcting weights.
+            for (int i = 0; i < lastLayerIndex + 1; i++)
             {
                 var layer = Layers[i].Neurons;
-                var previousLayer = Layers[i - 1].Neurons;
                 for (int n = 0; n < layer.Length; n++)
                 {
                     var neuron = layer[n];
-                    double sigma = errors[i][n] * neuron.DerivatedOutput;
                     for (int w = 0; w < neuron.Weights.Length; w++)
                     {
-                        double delta = previousLayer[w].Output * sigma;
-                        neuron.Weights[w] += delta * learningRate;
+                        neuron.Weights[w] -= learningRate * deltas[i][n] * neuron.Input[w];
                     }
                 }
             }
@@ -134,7 +152,7 @@ namespace NN_Samples.Perceptrons
                     Console.WriteLine("({0}) Error: {1}", epoch, error);
                 }
             }
-            while (error > targetError && epoch <= maxEpoch);
+            while (error > targetError && epoch < maxEpoch);
             TrainStats trainStats = new TrainStats
             {
                 LastError = error,
@@ -168,7 +186,7 @@ namespace NN_Samples.Perceptrons
 
         public void SetWeights(double[][][] weights)
         {
-            int otherLayerSize = weights.GetLength(0);
+            int otherLayerSize = weights.Length;
             if (otherLayerSize != Layers.Length)
             {
                 throw new ArgumentException("Sizes of perceptrons are not equal");

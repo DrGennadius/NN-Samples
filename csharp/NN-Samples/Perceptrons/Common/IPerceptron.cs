@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Common
 {
     public interface IPerceptron
     {
