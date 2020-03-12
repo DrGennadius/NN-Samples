@@ -3,6 +3,9 @@ using System;
 
 namespace NN_Samples.Perceptrons
 {
+    /// <summary>
+    /// Neuron for perceptron.
+    /// </summary>
     public class Neuron
     {
         public double[] Weights;
@@ -14,7 +17,7 @@ namespace NN_Samples.Perceptrons
 
         public Neuron(double[] neuronWeights, Random r)
         {
-            Bias = 10 * r.NextDouble() - 5;
+            Bias = r.NextDouble() - 0.5;
             Weights = neuronWeights;
             PreviousChanges = new double[neuronWeights.Length];
             for (int i = 0; i < neuronWeights.Length; i++)
@@ -25,11 +28,11 @@ namespace NN_Samples.Perceptrons
 
         public Neuron(int numberOfInputs, Random r)
         {
-            Bias = 10 * r.NextDouble() - 5;
+            Bias = r.NextDouble() - 0.5;
             Weights = new double[numberOfInputs];
             for (int i = 0; i < numberOfInputs; i++)
             {
-                Weights[i] = 10 * r.NextDouble() - 5;
+                Weights[i] = r.NextDouble() - 0.5;
             }
             PreviousChanges = new double[numberOfInputs];
             for (int i = 0; i < numberOfInputs; i++)

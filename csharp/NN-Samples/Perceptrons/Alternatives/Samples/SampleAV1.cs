@@ -188,7 +188,7 @@ namespace NN_Samples.Perceptrons.Alternatives.Samples
                 new VectorAV1(0.0)  // 1 and 1 = 1
             };
 
-            TrainData trainData = TrainData.GenerateXORDate();
+            TrainData trainData = TrainData.GenerateDataXOR();
 
             Random random = new Random(134577);
             SimplePerceptron perceptron1 = new SimplePerceptron(new int[] { 2, 3, 1 }, random);

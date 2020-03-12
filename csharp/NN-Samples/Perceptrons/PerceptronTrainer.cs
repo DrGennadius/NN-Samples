@@ -6,9 +6,22 @@ using System.Text;
 
 namespace NN_Samples.Perceptrons
 {
+    /// <summary>
+    /// Trainer for Perceptrons
+    /// </summary>
     public class PerceptronTrainer
     {
-        public TrainStats Train(IPerceptron perceptron, TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError)
+        /// <summary>
+        /// Training Perceptron.
+        /// </summary>
+        /// <param name="perceptron">Perceptron.</param>
+        /// <param name="trainData">Data for training.</param>
+        /// <param name="alpha">Learning rate.</param>
+        /// <param name="targetError">Target error value.</param>
+        /// <param name="maxEpoch">Max number epochs.</param>
+        /// <param name="printError">Print error each epoch.</param>
+        /// <returns></returns>
+        public TrainStats Train(IPerceptron perceptron, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError)
         {
             double error = double.MaxValue;
             int rowCountX = trainData.Inputs.GetLength(0);
@@ -38,7 +51,7 @@ namespace NN_Samples.Perceptrons
                     {
                         outputs[s, c] = currentOutput[c];
                     }
-                    perceptron.BackPropagation(input, targetOutputs, currentOutput, learningRate);
+                    perceptron.BackPropagation(input, targetOutputs, currentOutput, alpha);
                 }
                 error = CommonFunctions.MeanBatchMSE(outputs, trainData.Outputs);
                 if (printError && epoch % printErrorStep == 0)
@@ -55,7 +68,18 @@ namespace NN_Samples.Perceptrons
             return trainStats;
         }
 
-        public TrainStats[] PairTrain(IPerceptron perceptron1, IPerceptron perceptron2, TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError)
+        /// <summary>
+        /// Pair training of two Perceptrons.
+        /// </summary>
+        /// <param name="perceptron1">Perceptron 1</param>
+        /// <param name="perceptron2">Perceptron 1</param>
+        /// <param name="trainData">Data for training.</param>
+        /// <param name="alpha">Learning rate.</param>
+        /// <param name="targetError">Target error value.</param>
+        /// <param name="maxEpoch">Max number epochs.</param>
+        /// <param name="printError">Print error each epoch.</param>
+        /// <returns></returns>
+        public TrainStats[] PairTrain(IPerceptron perceptron1, IPerceptron perceptron2, TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError)
         {
             double error1 = double.MaxValue;
             double error2 = double.MaxValue;
@@ -89,23 +113,23 @@ namespace NN_Samples.Perceptrons
                         outputs1[s, c] = currentOutput1[c];
                         outputs2[s, c] = currentOutput1[c];
                     }
-                    perceptron1.BackPropagation(input, targetOutputs, currentOutput1, learningRate);
-                    perceptron2.BackPropagation(input, targetOutputs, currentOutput2, learningRate);
+                    perceptron1.BackPropagation(input, targetOutputs, currentOutput1, alpha);
+                    perceptron2.BackPropagation(input, targetOutputs, currentOutput2, alpha);
                 }
-                error1 = CommonFunctions.GeneralError(outputs1, trainData.Outputs);
-                error2 = CommonFunctions.GeneralError(outputs2, trainData.Outputs);
+                error1 = CommonFunctions.MeanBatchMSE(outputs1, trainData.Outputs);
+                error2 = CommonFunctions.MeanBatchMSE(outputs2, trainData.Outputs);
                 if (printError && epoch % printErrorStep == 0)
                 {
-                    Console.WriteLine("P1({0}) Error: {1}", epoch, error1);
-                    Console.WriteLine("P2({0}) Error: {1}", epoch, error2);
+                    Console.WriteLine("P1({0}) Mean Batch MSE: {1}", epoch, error1);
+                    Console.WriteLine("P2({0}) Mean Batch MSE: {1}", epoch, error2);
                 }
             }
             while (error1 > targetError && error2 > targetError && epoch < maxEpoch);
             TrainStats[] trainStats = new TrainStats[2];
             trainStats[0].LastError = error1;
             trainStats[0].NumberOfEpoch = epoch;
-            trainStats[0].LastError = error2;
-            trainStats[0].NumberOfEpoch = epoch;
+            trainStats[1].LastError = error2;
+            trainStats[1].NumberOfEpoch = epoch;
             return trainStats;
         }
     }

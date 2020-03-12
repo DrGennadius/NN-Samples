@@ -126,22 +126,22 @@ namespace NN_Samples_Console.Perceptrons
 
         public static void TestAND(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
-            TestLogic(perceptron, TrainData.GenerateANDDate(), activationFunctionType);
+            TestLogic(perceptron, TrainData.GenerateDataAND(), activationFunctionType);
         }
 
         public static void TestNAND(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
-            TestLogic(perceptron, TrainData.GenerateNANDDate(), activationFunctionType);
+            TestLogic(perceptron, TrainData.GenerateDataNAND(), activationFunctionType);
         }
 
         public static void TestOR(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
-            TestLogic(perceptron, TrainData.GenerateORDate(), activationFunctionType);
+            TestLogic(perceptron, TrainData.GenerateDataOR(), activationFunctionType);
         }
 
         public static void TestXOR(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
-            TestLogic(perceptron, TrainData.GenerateXORDate(), activationFunctionType);
+            TestLogic(perceptron, TrainData.GenerateDataXOR(), activationFunctionType);
         }
 
         public static void TestLogic(IPerceptron perceptron, TrainData trainData, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
@@ -155,7 +155,7 @@ namespace NN_Samples_Console.Perceptrons
 
         public static void TestMultiplication(IPerceptron perceptron)
         {
-            TrainData trainDataOrigin = TrainData.GenerateMultiplicationDate();
+            TrainData trainDataOrigin = TrainData.GenerateDataMultiplication();
             TrainData trainDataNormalized = CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin);
 
             CommonFunctions.GetMinMax(trainDataOrigin.Inputs, out double xMin, out double xMax);
@@ -178,7 +178,7 @@ namespace NN_Samples_Console.Perceptrons
 
         public static void TestSimpleNumbers(IPerceptron perceptron)
         {
-            TrainData trainDataOrigin = TrainData.GenerateSimpleNumbersDate();
+            TrainData trainDataOrigin = TrainData.GenerateDataSimpleNumbers();
             TrainData trainDataNormalized = CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin);
             CommonFunctions.GetMinMax(trainDataOrigin.Outputs, out double yMin, out double yMax);
             CommonFunctions.GetMinMax(trainDataOrigin.Inputs, out double xMin, out double xMax);

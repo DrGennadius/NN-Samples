@@ -13,7 +13,7 @@ namespace NN_Samples.Perceptrons
 
         public SimpleNeuron2(double[] neuronWeights, Random r)
         {
-            Bias = 10 * r.NextDouble() - 5;
+            Bias = r.NextDouble() - 0.5;
             Weights = neuronWeights;
         }
 
@@ -23,7 +23,7 @@ namespace NN_Samples.Perceptrons
             Weights = new double[numberOfInputs];
             for (int i = 0; i < numberOfInputs; i++)
             {
-                Weights[i] = 10 * r.NextDouble() - 5;
+                Weights[i] = r.NextDouble() - 0.5;
             }
         }
 

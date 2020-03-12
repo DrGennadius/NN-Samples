@@ -7,17 +7,26 @@ using System.Text;
 namespace NN_Samples.Perceptrons
 {
     /// <summary>
-    /// Simple perceptron.
+    /// Simple perceptron (without bias and momentum).
     /// </summary>
     public class SimplePerceptron : IPerceptron
     {
         SimpleLayer[] Layers;
 
+        /// <summary>
+        /// Create simple perceptron (without bias and momentum) by configuration.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
         public SimplePerceptron(params int[] neuronsPerLayer)
             : this(neuronsPerLayer, new Random())
         {
         }
 
+        /// <summary>
+        /// Create simple perceptron (without bias and momentum) by configuration and set Random.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
+        /// <param name="random"></param>
         public SimplePerceptron(int[] neuronsPerLayer, Random random)
         {
             Layers = new SimpleLayer[neuronsPerLayer.Length - 1];
@@ -28,6 +37,10 @@ namespace NN_Samples.Perceptrons
             }
         }
 
+        /// <summary>
+        /// Create simple perceptron (without bias and momentum) by other Perceptron.
+        /// </summary>
+        /// <param name="perceptron">Other Perceptron.</param>
         public SimplePerceptron(IPerceptron perceptron)
         {
             double[][][] otherWeights = perceptron.GetWeights();
@@ -114,54 +127,22 @@ namespace NN_Samples.Perceptrons
             }
         }
 
-        public TrainStats Train(TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError = true)
+        /// <summary>
+        /// Training Perceptron.
+        /// </summary>
+        /// <param name="trainData">Data for training.</param>
+        /// <param name="alpha">Learning rate.</param>
+        /// <param name="targetError">Target error value.</param>
+        /// <param name="maxEpoch">Max number epochs.</param>
+        /// <param name="printError">Print error each epoch.</param>
+        /// <returns></returns>
+        public TrainStats Train(TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError = false)
         {
-            double error = double.MaxValue;
-            int rowCountX = trainData.Inputs.GetLength(0);
-            int columnCountX = trainData.Inputs.GetLength(1);
-            int rowCountY = trainData.Outputs.GetLength(0);
-            int columnCountY = trainData.Outputs.GetLength(1);
-            int printErrorStep = maxEpoch / 100;
-            double[,] outputs = new double[rowCountY, columnCountY];
-            int epoch = 0;
-            do
-            {
-                epoch++;
-                for (int s = 0; s < trainData.Inputs.GetLength(0); s++)
-                {
-                    double[] input = new double[columnCountX];
-                    double[] targetOutputs = new double[columnCountY];
-                    for (var c = 0; c < columnCountX; c++)
-                    {
-                        input[c] = trainData.Inputs[s, c];
-                    }
-                    for (var c = 0; c < columnCountY; c++)
-                    {
-                        targetOutputs[c] = trainData.Outputs[s, c];
-                    }
-                    var currentOutput = FeedForward(input);
-                    for (var c = 0; c < columnCountY; c++)
-                    {
-                        outputs[s, c] = currentOutput[c];
-                    }
-                    BackPropagation(input, targetOutputs, currentOutput, learningRate);
-                }
-                error = CommonFunctions.GeneralError(outputs, trainData.Outputs);
-                if (printError && epoch % printErrorStep == 0)
-                {
-                    Console.WriteLine("({0}) Error: {1}", epoch, error);
-                }
-            }
-            while (error > targetError && epoch < maxEpoch);
-            TrainStats trainStats = new TrainStats
-            {
-                LastError = error,
-                NumberOfEpoch = epoch
-            };
-            return trainStats;
+            PerceptronTrainer perceptronTrainer = new PerceptronTrainer();
+            return perceptronTrainer.Train(this, trainData, alpha, targetError, maxEpoch, printError);
         }
 
-        public void TransferWeights(IPerceptron otherPerceptron)
+        public void TransferWeightsFrom(IPerceptron otherPerceptron)
         {
             SetWeights(otherPerceptron.GetWeights());
         }

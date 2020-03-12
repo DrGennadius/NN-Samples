@@ -17,16 +17,33 @@ namespace NN_Samples.Perceptrons
 
         public ActivationFunction ActivationFunction;
 
+        /// <summary>
+        /// Create perceptron with bias and momentum by configuration.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
         public Perceptron(params int[] neuronsPerLayer)
             : this(neuronsPerLayer, ActivationFunctionType.Sigmoid)
         {
         }
 
+        /// <summary>
+        /// Create perceptron with bias and momentum by configuration, setting activation function and momentum rate.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
+        /// <param name="activationFunctionType">Activation Function.</param>
+        /// <param name="momentumRate">Momentum rate.</param>
         public Perceptron(int[] neuronsPerLayer, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double momentumRate = 0.5)
             : this(neuronsPerLayer, new Random(), activationFunctionType, momentumRate)
         {
         }
 
+        /// <summary>
+        /// Create perceptron with bias and momentum by configuration, setting activation function, momentum rate and Random.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
+        /// <param name="random">Random.</param>
+        /// <param name="activationFunctionType">Activation Function.</param>
+        /// <param name="momentumRate">Momentum rate.</param>
         public Perceptron(int[] neuronsPerLayer, Random random, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double momentumRate = 0.5)
         {
             ActivationFunction = new ActivationFunction(activationFunctionType);
@@ -39,6 +56,12 @@ namespace NN_Samples.Perceptrons
             }
         }
 
+        /// <summary>
+        /// Create perceptron with bias and momentum by other Perceptron and setting activation function and momentum rate.
+        /// </summary>
+        /// <param name="perceptron"></param>
+        /// <param name="activationFunctionType"></param>
+        /// <param name="momentumRate"></param>
         public Perceptron(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double momentumRate = 0.5)
         {
             double[][][] otherWeights = perceptron.GetWeights();
@@ -132,54 +155,22 @@ namespace NN_Samples.Perceptrons
             }
         }
 
-        public TrainStats Train(TrainData trainData, double targetError, double learningRate, int maxEpoch, bool printError = true)
+        /// <summary>
+        /// Training Perceptron.
+        /// </summary>
+        /// <param name="trainData">Data for training.</param>
+        /// <param name="alpha">Learning rate.</param>
+        /// <param name="targetError">Target error value.</param>
+        /// <param name="maxEpoch">Max number epochs.</param>
+        /// <param name="printError">Print error each epoch.</param>
+        /// <returns></returns>
+        public TrainStats Train(TrainData trainData, double alpha, double targetError, int maxEpoch, bool printError = false)
         {
-            double error = double.MaxValue;
-            int rowCountX = trainData.Inputs.GetLength(0);
-            int columnCountX = trainData.Inputs.GetLength(1);
-            int rowCountY = trainData.Outputs.GetLength(0);
-            int columnCountY = trainData.Outputs.GetLength(1);
-            int printErrorStep = maxEpoch / 100;
-            double[,] outputs = new double[rowCountY, columnCountY];
-            int epoch = 0;
-            do
-            {
-                epoch++;
-                for (int s = 0; s < trainData.Inputs.GetLength(0); s++)
-                {
-                    double[] input = new double[columnCountX];
-                    double[] targetOutputs = new double[columnCountY];
-                    for (var c = 0; c < columnCountX; c++)
-                    {
-                        input[c] = trainData.Inputs[s, c];
-                    }
-                    for (var c = 0; c < columnCountY; c++)
-                    {
-                        targetOutputs[c] = trainData.Outputs[s, c];
-                    }
-                    var currentOutput = FeedForward(input);
-                    for (var c = 0; c < columnCountY; c++)
-                    {
-                        outputs[s, c] = currentOutput[c];
-                    }
-                    BackPropagation(input, targetOutputs, currentOutput, learningRate);
-                }
-                error = CommonFunctions.GeneralError(outputs, trainData.Outputs);
-                if (printError && epoch % printErrorStep == 0)
-                {
-                    Console.WriteLine("({0}) Error: {1}", epoch, error);
-                }
-            }
-            while (error > targetError && epoch < maxEpoch);
-            TrainStats trainStats = new TrainStats
-            {
-                LastError = error,
-                NumberOfEpoch = epoch
-            };
-            return trainStats;
+            PerceptronTrainer perceptronTrainer = new PerceptronTrainer();
+            return perceptronTrainer.Train(this, trainData, alpha, targetError, maxEpoch, printError);
         }
 
-        public void TransferWeights(IPerceptron otherPerceptron)
+        public void TransferWeightsFrom(IPerceptron otherPerceptron)
         {
             SetWeights(otherPerceptron.GetWeights());
         }

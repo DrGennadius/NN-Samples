@@ -4,13 +4,20 @@ using System.Text;
 
 namespace NN_Samples.Common
 {
+    /// <summary>
+    /// Data for training.
+    /// </summary>
     public class TrainData
     {
         public double[,] Inputs;
 
         public double[,] Outputs;
 
-        public static TrainData GenerateXORDate()
+        /// <summary>
+        /// Generate data "XOR".
+        /// </summary>
+        /// <returns></returns>
+        public static TrainData GenerateDataXOR()
         {
             TrainData trainData = new TrainData();
             trainData.Inputs = new double[,]
@@ -30,7 +37,11 @@ namespace NN_Samples.Common
             return trainData;
         }
 
-        public static TrainData GenerateORDate()
+        /// <summary>
+        /// Generate data "OR".
+        /// </summary>
+        /// <returns></returns>
+        public static TrainData GenerateDataOR()
         {
             TrainData trainData = new TrainData();
             trainData.Inputs = new double[,]
@@ -50,7 +61,11 @@ namespace NN_Samples.Common
             return trainData;
         }
 
-        public static TrainData GenerateANDDate()
+        /// <summary>
+        /// Generate data "AND".
+        /// </summary>
+        /// <returns></returns>
+        public static TrainData GenerateDataAND()
         {
             TrainData trainData = new TrainData();
             trainData.Inputs = new double[,]
@@ -70,7 +85,11 @@ namespace NN_Samples.Common
             return trainData;
         }
 
-        public static TrainData GenerateNANDDate()
+        /// <summary>
+        /// Generate data "NAND".
+        /// </summary>
+        /// <returns></returns>
+        public static TrainData GenerateDataNAND()
         {
             TrainData trainData = new TrainData();
             trainData.Inputs = new double[,]
@@ -90,7 +109,11 @@ namespace NN_Samples.Common
             return trainData;
         }
 
-        public static TrainData GenerateMultiplicationDate()
+        /// <summary>
+        /// Generate data "Multiplication".
+        /// </summary>
+        /// <returns></returns>
+        public static TrainData GenerateDataMultiplication()
         {
             TrainData trainData = new TrainData();
             int min = 0;
@@ -117,7 +140,11 @@ namespace NN_Samples.Common
             return trainData;
         }
 
-        public static TrainData GenerateSimpleNumbersDate()
+        /// <summary>
+        /// Generate data "Simple Numbers".
+        /// </summary>
+        /// <returns></returns>
+        public static TrainData GenerateDataSimpleNumbers()
         {
             TrainData trainData = new TrainData();
             trainData.Inputs = new double[,]
