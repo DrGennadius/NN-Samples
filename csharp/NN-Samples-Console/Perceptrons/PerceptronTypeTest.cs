@@ -146,24 +146,39 @@ namespace NN_Samples_Console.Perceptrons
 
         public static void TestLogic(IPerceptron perceptron, TrainData trainData, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
+            if (activationFunctionType == ActivationFunctionType.Tanh)
+            {
+                trainData = CommonFunctions.CreateNewNormalizeTrainData(trainData, -1, 1);
+            }
+
             var perceptronTrainer = new PerceptronTrainer();
-            TrainStats trainStats = perceptronTrainer.Train(perceptron, trainData, LogicTargetError, LogicLearningRate, LogicMaxEpoch, LogicPrintError);
+            TrainStats trainStats = perceptronTrainer.Train(perceptron, trainData, LogicLearningRate, LogicTargetError, LogicMaxEpoch, LogicPrintError);
             Console.WriteLine(trainStats);
 
             TestReadyLogicModel(perceptron, activationFunctionType);
         }
 
-        public static void TestMultiplication(IPerceptron perceptron)
+        public static void TestMultiplication(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
             TrainData trainDataOrigin = TrainData.GenerateDataMultiplication();
-            TrainData trainDataNormalized = CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin);
-
             CommonFunctions.GetMinMax(trainDataOrigin.Inputs, out double xMin, out double xMax);
             CommonFunctions.GetMinMax(trainDataOrigin.Outputs, out double yMin, out double yMax);
+            Interval sourceIntervalX = new Interval(xMin, xMax);
+            Interval sourceIntervalY = new Interval(yMin, yMax);
+
+            Interval normalizedIntervalX = activationFunctionType == ActivationFunctionType.Tanh ?
+                new Interval(-1, 1) :
+                new Interval(0, 1);
+            Interval normalizedIntervalY = activationFunctionType == ActivationFunctionType.Tanh ?
+                new Interval(-1, 1) :
+                new Interval(0, 1);
+            TrainData trainDataNormalized = activationFunctionType == ActivationFunctionType.Tanh ? 
+                CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin, -1, 1) : 
+                CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin);
 
             Console.WriteLine("\nMultiplication training...");
             var perceptronTrainer = new PerceptronTrainer();
-            TrainStats trainStats = perceptronTrainer.Train(perceptron, trainDataNormalized, 0.0005, 0.5, 100000, false);
+            TrainStats trainStats = perceptronTrainer.Train(perceptron, trainDataNormalized, 0.5, 0.0005, 50000, false);
             Console.WriteLine(trainStats);
 
             Console.WriteLine("\nMultiplication result");
@@ -173,70 +188,109 @@ namespace NN_Samples_Console.Perceptrons
                 { 9, 0 }, { 0, 9 }, { 0, 3 }, { 0, 0 }, { 0, 1 }, { 5, 5 },
                 { 1.5, 1.5 }, { 1.1, 1.1 }, { 8.9, 8.9 }, { 3.3, 3.3 }, { 0, 5.5 }
             };
-            TestReadyMultiplicationModel(perceptron, multiplicationTestData, xMin, xMax, yMin, yMax);
+            Interval[] intervalsX = new Interval[] { sourceIntervalX, normalizedIntervalX };
+            Interval[] intervalsY = new Interval[] { sourceIntervalY, normalizedIntervalY };
+            TestReadyModel2x(perceptron, multiplicationTestData, "*", intervalsX, intervalsY);
         }
 
-        public static void TestSimpleNumbers(IPerceptron perceptron)
+        public static void TestSimpleNumbers(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double learningRate = 0.5, double targetError = 0.001)
         {
             TrainData trainDataOrigin = TrainData.GenerateDataSimpleNumbers();
-            TrainData trainDataNormalized = CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin);
-            CommonFunctions.GetMinMax(trainDataOrigin.Outputs, out double yMin, out double yMax);
             CommonFunctions.GetMinMax(trainDataOrigin.Inputs, out double xMin, out double xMax);
+            CommonFunctions.GetMinMax(trainDataOrigin.Outputs, out double yMin, out double yMax);
+            Interval sourceIntervalX = new Interval(xMin, xMax);
+            Interval sourceIntervalY = new Interval(yMin, yMax);
+
+            Interval normalizedIntervalX = activationFunctionType == ActivationFunctionType.Tanh ?
+                new Interval(-1, 1) :
+                new Interval(0, 1);
+            Interval normalizedIntervalY = activationFunctionType == ActivationFunctionType.Tanh ?
+                new Interval(-1, 1) :
+                new Interval(0, 1);
+            TrainData trainDataNormalized = activationFunctionType == ActivationFunctionType.Tanh ?
+                CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin, -1, 1) :
+                CommonFunctions.CreateNewNormalizeTrainData(trainDataOrigin);
 
             Console.WriteLine("\nSimpleNumbers training...");
             var perceptronTrainer = new PerceptronTrainer();
-            TrainStats trainStats = perceptronTrainer.Train(perceptron, trainDataNormalized, 0.001, 0.5, 100000, false);
+            TrainStats trainStats = perceptronTrainer.Train(perceptron, trainDataNormalized, learningRate, targetError, 50000, false);
             Console.WriteLine(trainStats);
 
             Console.WriteLine("\nSimpleNumbers result");
             double[] row = new double[trainDataOrigin.Inputs.GetLength(1)];
-            for (int i = 0; i < trainDataOrigin.Inputs.GetLength(0); i++)
+            for (int i = 0; i < trainDataNormalized.Inputs.GetLength(0); i++)
             {
-                for (int c = 0; c < trainDataOrigin.Inputs.GetLongLength(1); c++)
+                for (int c = 0; c < trainDataNormalized.Inputs.GetLongLength(1); c++)
                 {
-                    row[c] = trainDataOrigin.Inputs[i, c];
+                    row[c] = trainDataNormalized.Inputs[i, c];
                 }
                 var output = perceptron.FeedForward(row);
-                var denormalizedOutput = CommonFunctions.Denormalize(output, yMin, yMax);
-                Console.WriteLine(string.Join(" ", denormalizedOutput.Select(y => string.Format("test {0}: {1}", i, Math.Round(y)))));
+                var denormalizedOutput = CommonFunctions.Scale(output, normalizedIntervalY, sourceIntervalY);
+                Console.WriteLine(string.Join(" ", denormalizedOutput.Select(y => string.Format("test {0}: {1:0.00}", i, y))));
             }
         }
 
-        public static void TestReadyMultiplicationModel(IPerceptron perceptron, double[,] multiplicationTestData, double xMin, double xMax, double yMin, double yMax)
+        public static void TestReadyModel2x(IPerceptron perceptron, double[,] testData, string separate, Interval[] intervalsX, Interval[] intervalsY)
         {
-            for (int i = 0; i < multiplicationTestData.GetLength(0); i++)
+            for (int i = 0; i < testData.GetLength(0); i++)
             {
-                TestReadyMultiplicationModel(perceptron, multiplicationTestData[i, 0], multiplicationTestData[i, 1], xMin, xMax, yMin, yMax);
+                TestReadyModel2x(perceptron, testData[i, 0], testData[i, 1], separate, intervalsX, intervalsY);
             }
         }
 
-        public static void TestReadyMultiplicationModel(IPerceptron perceptron, double x1, double x2, double xMin, double xMax, double yMin, double yMax)
+        public static void TestReadyModel2x(IPerceptron perceptron, TrainData testData, string separate, Interval[] intervalsX, Interval[] intervalsY)
         {
-            var output = perceptron.FeedForward(new double[] { CommonFunctions.Normalize(x1, xMin, xMax), CommonFunctions.Normalize(x2, xMin, xMax) });
-            var denormalizedOutput = CommonFunctions.Denormalize(output, yMin, yMax);
-            Console.WriteLine(string.Join(" ", denormalizedOutput.Select(y => string.Format("{0} * {1} = {2}", x1, x2, y))));
+            for (int i = 0; i < testData.Inputs.GetLength(0); i++)
+            {
+                TestReadyModel2x(perceptron, testData.Inputs[i, 0], testData.Inputs[i, 1], separate, intervalsX, intervalsY);
+            }
+        }
+
+        public static void TestReadyModel2x(IPerceptron perceptron, double x1, double x2, string separate, Interval[] intervalsX, Interval[] intervalsY)
+        {
+            var output = perceptron.FeedForward(new double[] { CommonFunctions.Scale(x1, intervalsX[0], intervalsX[1]), CommonFunctions.Scale(x2, intervalsX[0], intervalsX[1]) });
+            var denormalizedOutput = CommonFunctions.Scale(output, intervalsY[1], intervalsY[0]);
+            Console.WriteLine(string.Join(" ", denormalizedOutput.Select(y => string.Format("{1} {0} {2} = {3}", separate, x1, x2, y))));
         }
 
         public static void TestReadyLogicModel(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid)
         {
-            var sample = activationFunctionType == ActivationFunctionType.HyperbolicTangent ? 
-                new double[] { -1, -1 } : new double[] { 0, 0 };
-            var output = perceptron.FeedForward(sample);
-            Console.WriteLine("0 0 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+            if (activationFunctionType == ActivationFunctionType.Tanh)
+            {
+                var sample = new double[] { -1, -1 };
+                var output = perceptron.FeedForward(sample);
+                Console.WriteLine("0 0 = " + string.Join(" ", CommonFunctions.Scale(output, -1, 1, 0, 1).Select(x => Math.Round(x, 2))));
 
-            sample = activationFunctionType == ActivationFunctionType.HyperbolicTangent ?
-                new double[] { -1, 1 } : new double[] { 0, 1 };
-            output = perceptron.FeedForward(sample);
-            Console.WriteLine("0 1 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+                sample = new double[] { -1, 1 };
+                output = perceptron.FeedForward(sample);
+                Console.WriteLine("0 1 = " + string.Join(" ", CommonFunctions.Scale(output, -1, 1, 0, 1).Select(x => Math.Round(x, 2))));
 
-            sample = activationFunctionType == ActivationFunctionType.HyperbolicTangent ?
-                new double[] { 1, -1 } : new double[] { 1, 0 };
-            output = perceptron.FeedForward(sample);
-            Console.WriteLine("1 0 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+                sample = new double[] { 1, -1 };
+                output = perceptron.FeedForward(sample);
+                Console.WriteLine("1 0 = " + string.Join(" ", CommonFunctions.Scale(output, -1, 1, 0, 1).Select(x => Math.Round(x, 2))));
 
-            sample = new double[] { 1, 1 };
-            output = perceptron.FeedForward(sample);
-            Console.WriteLine("1 1 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+                sample = new double[] { 1, 1 };
+                output = perceptron.FeedForward(sample);
+                Console.WriteLine("1 1 = " + string.Join(" ", CommonFunctions.Scale(output, -1, 1, 0, 1).Select(x => Math.Round(x, 2))));
+            }
+            else
+            {
+                var sample = new double[] { 0, 0 };
+                var output = perceptron.FeedForward(sample);
+                Console.WriteLine("0 0 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+
+                sample = new double[] { 0, 1 };
+                output = perceptron.FeedForward(sample);
+                Console.WriteLine("0 1 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+
+                sample = new double[] { 1, 0 };
+                output = perceptron.FeedForward(sample);
+                Console.WriteLine("1 0 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+
+                sample = new double[] { 1, 1 };
+                output = perceptron.FeedForward(sample);
+                Console.WriteLine("1 1 = " + string.Join(" ", output.Select(x => Math.Round(x, 2))));
+            }
         }
 
         public static void RunAlternativeVariant1()

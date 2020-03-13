@@ -97,21 +97,6 @@ namespace NN_Samples.Common
             GetMinMax(Flatten(values), out min, out max);
         }
 
-        public static double Denormalize(double val, double min, double max)
-        {
-            return val * (max - min) + min;
-        }
-
-        public static double[] Denormalize(double[] values, double min, double max)
-        {
-            double[] newValues = new double[values.Length];
-            for (int i = 0; i < values.Length; i++)
-            {
-                newValues[i] = Denormalize(values[i], min, max);
-            }
-            return newValues;
-        }
-
         /// <summary>
         /// Normalize value to range [0,1].
         /// </summary>
@@ -125,7 +110,18 @@ namespace NN_Samples.Common
         }
 
         /// <summary>
-        /// Normalize value with scale from range [<paramref name="rangeMin"/>,<paramref name="rangeMax"/>] to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
+        /// Normalize value to range [0,1].
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="interval"></param>
+        /// <returns></returns>
+        public static double Normalize(double val, Interval interval)
+        {
+            return (val - interval.Start.Value) / (interval.End.Value - interval.Start.Value);
+        }
+
+        /// <summary>
+        /// Scale value from range [<paramref name="rangeMin"/>,<paramref name="rangeMax"/>] to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
         /// </summary>
         /// <param name="val">Value</param>
         /// <param name="rangeMin">Range min</param>
@@ -136,6 +132,20 @@ namespace NN_Samples.Common
         public static double Scale(double val, double rangeMin, double rangeMax, double scaledRangeMin, double scaledRangeMax)
         {
             return scaledRangeMin + ((val - rangeMin) * (scaledRangeMax - scaledRangeMin) / (rangeMax - rangeMin));
+        }
+
+        /// <summary>
+        /// Scale value from source range to scaled range.
+        /// </summary>
+        /// <param name="val">Value</param>
+        /// <param name="sourceInterval"></param>
+        /// <param name="scaledInterval"></param>
+        /// <returns></returns>
+        public static double Scale(double val, Interval sourceInterval, Interval scaledInterval)
+        {
+            return scaledInterval.Start.Value + 
+                ((val - sourceInterval.Start.Value) * (scaledInterval.End.Value - scaledInterval.Start.Value) 
+                / (sourceInterval.End.Value - sourceInterval.Start.Value));
         }
 
         /// <summary>
@@ -161,13 +171,46 @@ namespace NN_Samples.Common
         /// <param name="scaledRangeMin"></param>
         /// <param name="scaledRangeMax"></param>
         /// <returns></returns>
-        public static double[] Normalize(double[] values, double scaledRangeMin, double scaledRangeMax)
+        public static double[] Scale(double[] values, double scaledRangeMin, double scaledRangeMax)
+        {
+            GetMinMax(values, out double rangeMin, out double rangeMax);
+            return Scale(values, rangeMin, rangeMax, scaledRangeMin, scaledRangeMax);
+        }
+
+        /// <summary>
+        /// Normalize values with scale to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="forceRangeMin"></param>
+        /// <param name="forceRangeMax"></param>
+        /// <param name="scaledRangeMin"></param>
+        /// <param name="scaledRangeMax"></param>
+        /// <returns></returns>
+        public static double[] Scale(double[] values, double forceRangeMin, double forceRangeMax, double scaledRangeMin, double scaledRangeMax)
         {
             double[] normalizedValues = new double[values.Length];
-            GetMinMax(values, out double rangeMin, out double rangeMax);
             for (int i = 0; i < values.Length; i++)
             {
-                normalizedValues[i] = Scale(values[i], rangeMin, rangeMax, scaledRangeMin, scaledRangeMax);
+                normalizedValues[i] = Scale(values[i], forceRangeMin, forceRangeMax, scaledRangeMin, scaledRangeMax);
+            }
+            return normalizedValues;
+        }
+
+        /// <summary>
+        /// Normalize values with scale to range [<paramref name="scaledRangeMin"/>,<paramref name="scaledRangeMax"/>].
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="forceRangeMin"></param>
+        /// <param name="forceRangeMax"></param>
+        /// <param name="scaledRangeMin"></param>
+        /// <param name="scaledRangeMax"></param>
+        /// <returns></returns>
+        public static double[] Scale(double[] values, Interval forceInterval, Interval scaledInterval)
+        {
+            double[] normalizedValues = new double[values.Length];
+            for (int i = 0; i < values.Length; i++)
+            {
+                normalizedValues[i] = Scale(values[i], forceInterval.Start.Value, forceInterval.End.Value, scaledInterval.Start.Value, scaledInterval.End.Value);
             }
             return normalizedValues;
         }
@@ -204,7 +247,7 @@ namespace NN_Samples.Common
         {
             int size1 = values.GetLength(0);
             int size2 = values.GetLength(1);
-            double[] flattenNormalizedValues = Normalize(Flatten(values), scaledRangeMin, scaledRangeMax);
+            double[] flattenNormalizedValues = Scale(Flatten(values), scaledRangeMin, scaledRangeMax);
             double[,] normalizedValues = new double[size1, size2];
             for (int i = 0; i < size1; i++)
             {

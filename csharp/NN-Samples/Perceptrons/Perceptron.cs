@@ -45,8 +45,20 @@ namespace NN_Samples.Perceptrons
         /// <param name="activationFunctionType">Activation Function.</param>
         /// <param name="momentumRate">Momentum rate.</param>
         public Perceptron(int[] neuronsPerLayer, Random random, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double momentumRate = 0.5)
+            : this(neuronsPerLayer, random, new ActivationFunction(activationFunctionType), momentumRate)
         {
-            ActivationFunction = new ActivationFunction(activationFunctionType);
+        }
+
+        /// <summary>
+        /// Create perceptron with bias and momentum by configuration, setting activation function, momentum rate and Random.
+        /// </summary>
+        /// <param name="neuronsPerLayer">Configuration.</param>
+        /// <param name="random">Random.</param>
+        /// <param name="activationFunctionType">Activation Function.</param>
+        /// <param name="momentumRate">Momentum rate.</param>
+        public Perceptron(int[] neuronsPerLayer, Random random, ActivationFunction activationFunction, double momentumRate = 0.5)
+        {
+            ActivationFunction = activationFunction;
             Layers = new Layer[neuronsPerLayer.Length - 1];
             MomentumRate = momentumRate;
 
@@ -63,11 +75,22 @@ namespace NN_Samples.Perceptrons
         /// <param name="activationFunctionType"></param>
         /// <param name="momentumRate"></param>
         public Perceptron(IPerceptron perceptron, ActivationFunctionType activationFunctionType = ActivationFunctionType.Sigmoid, double momentumRate = 0.5)
+            : this(perceptron, new ActivationFunction(activationFunctionType), momentumRate)
+        {
+        }
+
+        /// <summary>
+        /// Create perceptron with bias and momentum by other Perceptron and setting activation function and momentum rate.
+        /// </summary>
+        /// <param name="perceptron"></param>
+        /// <param name="activationFunctionType"></param>
+        /// <param name="momentumRate"></param>
+        public Perceptron(IPerceptron perceptron, ActivationFunction activationFunction, double momentumRate = 0.5)
         {
             double[][][] otherWeights = perceptron.GetWeights();
             int layerCount = otherWeights.GetLength(0);
 
-            ActivationFunction = new ActivationFunction(activationFunctionType);
+            ActivationFunction = activationFunction;
             Layers = new Layer[layerCount];
             MomentumRate = momentumRate;
             Random r = new Random();
@@ -149,8 +172,10 @@ namespace NN_Samples.Perceptrons
                         double weightChange = - learningRate * deltas[i][n] * neuron.Input[w] + neuron.PreviousChanges[w] * MomentumRate;
                         neuron.Weights[w] += weightChange;
                         neuron.PreviousChanges[w] = weightChange;
-                        neuron.Bias -= learningRate * deltas[i][n];
                     }
+                    double biasChange = -learningRate * deltas[i][n] + neuron.PreviousBiasChange * MomentumRate;
+                    neuron.Bias += biasChange;
+                    neuron.PreviousBiasChange = biasChange;
                 }
             }
         }

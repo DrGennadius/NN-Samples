@@ -14,6 +14,7 @@ namespace NN_Samples.Perceptrons
         public double Output;
         public double DerivatedOutput;
         public double Bias;
+        public double PreviousBiasChange;
 
         public Neuron(double[] neuronWeights, Random r)
         {
