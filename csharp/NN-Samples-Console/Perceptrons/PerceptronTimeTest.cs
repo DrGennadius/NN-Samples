@@ -20,18 +20,18 @@ namespace NN_Samples_Console.Perceptrons
             var perceptronBase = new PerceptronBase(perceptron);
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            TrainStats singleTrainStats = perceptronTrainer.Train(perceptronOld, TrainData.GenerateDataSimpleNumbers(), 0.5, 1e-10, 250000, false, 10);
+            TrainStats singleTrainStats = perceptronTrainer.Train(perceptronOld, TrainData.GenerateDataSimpleNumbers(), 0.5, 1e-10, 25000, false, 10);
             Console.WriteLine(singleTrainStats);
             watch.Stop();
             Console.WriteLine($"Old Perceptron Execution Time: {watch.ElapsedMilliseconds} ms");
 
             watch.Restart();
-            singleTrainStats = perceptronTrainer.Train(perceptronBase, TrainData.GenerateDataSimpleNumbers(), 0.5, 1e-10, 250000, false, 10);
+            singleTrainStats = perceptronTrainer.Train(perceptronBase, TrainData.GenerateDataSimpleNumbers(), 0.5, 1e-10, 25000, false, 10);
             Console.WriteLine(singleTrainStats);
             Console.WriteLine($"Base Perceptron Execution Time: {watch.ElapsedMilliseconds} ms");
 
             watch.Restart();
-            singleTrainStats = perceptronTrainer.Train(perceptron, TrainData.GenerateDataSimpleNumbers(), 0.5, 1e-10, 250000, false, 10);
+            singleTrainStats = perceptronTrainer.Train(perceptron, TrainData.GenerateDataSimpleNumbers(), 0.5, 1e-10, 25000, false, 10);
             Console.WriteLine(singleTrainStats);
             Console.WriteLine($"Perceptron Execution Time: {watch.ElapsedMilliseconds} ms");
         }

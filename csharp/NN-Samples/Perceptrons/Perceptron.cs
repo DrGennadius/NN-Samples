@@ -177,12 +177,13 @@ namespace NN_Samples.Perceptrons
                 for (int n = 0; n < layer.Length; n++)
                 {
                     var neuron = layer[n];
+                    double neuronAlphaDelta = -alpha * neuron.Delta;
                     for (int w = 0; w < neuron.Weights.Length; w++)
                     {
-                        neuron.PreviousChanges[w] = -alpha * neuron.Delta * neuron.Input[w] + neuron.PreviousChanges[w] * MomentumRate;
+                        neuron.PreviousChanges[w] = neuronAlphaDelta * neuron.Input[w] + neuron.PreviousChanges[w] * MomentumRate;
                         neuron.Weights[w] += neuron.PreviousChanges[w];
                     }
-                    neuron.PreviousBiasChange = -alpha * neuron.Delta + neuron.PreviousBiasChange * MomentumRate;
+                    neuron.PreviousBiasChange = neuronAlphaDelta + neuron.PreviousBiasChange * MomentumRate;
                     neuron.Bias += neuron.PreviousBiasChange;
                 }
             }
