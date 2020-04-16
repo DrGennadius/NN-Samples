@@ -3,28 +3,38 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Alternatives
 {
-    public class Layer
+    public class LayerOld
     {
-        public Neuron[] Neurons;
+        public NeuronOld[] Neurons;
 
-        public Layer(double[][] layerWeights, Random r)
+        public LayerOld(double[][] layerWeights, double[] layerBias)
         {
             int neuronCount = layerWeights.GetLength(0);
-            Neurons = new Neuron[neuronCount];
+            Neurons = new NeuronOld[neuronCount];
             for (int i = 0; i < neuronCount; i++)
             {
-                Neurons[i] = new Neuron(layerWeights[i], r);
+                Neurons[i] = new NeuronOld(layerWeights[i], layerBias[i]);
             }
         }
 
-        public Layer(int numberOfNeurons, int numberOfInputs, Random r)
+        public LayerOld(double[][] layerWeights, Random r)
         {
-            Neurons = new Neuron[numberOfNeurons];
+            int neuronCount = layerWeights.GetLength(0);
+            Neurons = new NeuronOld[neuronCount];
+            for (int i = 0; i < neuronCount; i++)
+            {
+                Neurons[i] = new NeuronOld(layerWeights[i], r);
+            }
+        }
+
+        public LayerOld(int numberOfNeurons, int numberOfInputs, Random r)
+        {
+            Neurons = new NeuronOld[numberOfNeurons];
             for (int i = 0; i < numberOfNeurons; i++)
             {
-                Neurons[i] = new Neuron(numberOfInputs, r);
+                Neurons[i] = new NeuronOld(numberOfInputs, r);
             }
         }
 

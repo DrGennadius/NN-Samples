@@ -2,16 +2,29 @@
 using NN_Samples.Perceptrons.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Alternatives
 {
     /// <summary>
     /// Perceptron with bias.
     /// </summary>
-    public class SimplePerceptron2 : IPerceptron
+    public class SimplePerceptron2 : IPerceptronOld
     {
         SimpleLayer2[] Layers;
+
+        public double[][,] Weights { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public double[][] Biases { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public PerceptronTopology Topology
+        {
+            get
+            {
+                return new PerceptronTopology(Layers[0].Neurons[0].Weights.Length, Layers.Select(x => x.Neurons.Length).ToArray(), GetActivationFunction());
+            }
+            set => throw new NotImplementedException();
+        }
+        public double MomentumRate { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         /// <summary>
         /// Create perceptron with bias by configuration.
@@ -41,7 +54,7 @@ namespace NN_Samples.Perceptrons
         /// Create simple perceptron with bias by other Perceptron.
         /// </summary>
         /// <param name="perceptron"></param>
-        public SimplePerceptron2(IPerceptron perceptron)
+        public SimplePerceptron2(IPerceptronOld perceptron)
         {
             double[][][] otherWeights = perceptron.GetWeights();
             int layerCount = otherWeights.GetLength(0);
@@ -55,7 +68,7 @@ namespace NN_Samples.Perceptrons
             }
         }
 
-        public double[] FeedForward(double[] input)
+        public double[] Forward(double[] input)
         {
             double[] outputs = new double[0];
             for (int i = 0; i < Layers.Length; i++)
@@ -66,7 +79,7 @@ namespace NN_Samples.Perceptrons
             return outputs;
         }
 
-        public void BackPropagation(double[] input, double[] targetOutput, double[] realOutput, double learningRate)
+        public void Backward(double[] input, double[] targetOutput, double learningRate)
         {
             double[][] deltas = new double[Layers.Length][];
             int lastLayerIndex = Layers.Length - 1;
@@ -145,7 +158,7 @@ namespace NN_Samples.Perceptrons
             return perceptronTrainer.Train(this, trainData, alpha, targetError, maxEpoch, printError);
         }
 
-        public void TransferWeightsFrom(IPerceptron otherPerceptron)
+        public void TransferWeightsFrom(IPerceptronOld otherPerceptron)
         {
             SetWeights(otherPerceptron.GetWeights());
         }
@@ -201,6 +214,50 @@ namespace NN_Samples.Perceptrons
                     }
                 }
             }
+        }
+
+        public double[][] GetBiases()
+        {
+            double[][] biases = new double[Layers.Length][];
+            for (int i = 0; i < Layers.Length; i++)
+            {
+                biases[i] = new double[Layers[i].Neurons.Length];
+                for (int n = 0; n < Layers[i].Neurons.Length; n++)
+                {
+                    biases[i][n] = Layers[i].Neurons[n].Bias;
+                }
+            }
+            return biases;
+        }
+
+        public ActivationFunction GetActivationFunction()
+        {
+            return new ActivationFunction(ActivationFunctionType.Sigmoid);
+        }
+
+        public double GetMomentumRate()
+        {
+            return 0;
+        }
+
+        public TrainStats Train(double[,] inputs, double[,] outputs, double alpha, double targetError, int maxEpoch, bool printError = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TransferFrom(IPerceptronBase otherPerceptron)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void TransferTo(IPerceptronBase otherPerceptron)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Clone()
+        {
+            throw new NotImplementedException();
         }
     }
 }

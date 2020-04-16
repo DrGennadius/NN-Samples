@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Alternatives
 {
     public class SimpleLayer2
     {

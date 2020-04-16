@@ -1,12 +1,12 @@
 ﻿using NN_Samples.Common;
 using System;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Alternatives
 {
     /// <summary>
     /// Neuron for perceptron.
     /// </summary>
-    public class Neuron
+    public class NeuronOld
     {
         public double[] Weights;
         public double[] Input;
@@ -16,9 +16,9 @@ namespace NN_Samples.Perceptrons
         public double Bias;
         public double PreviousBiasChange;
 
-        public Neuron(double[] neuronWeights, Random r)
+        public NeuronOld(double[] neuronWeights, double bias)
         {
-            Bias = r.NextDouble() - 0.5;
+            Bias = bias;
             Weights = neuronWeights;
             PreviousChanges = new double[neuronWeights.Length];
             for (int i = 0; i < neuronWeights.Length; i++)
@@ -27,7 +27,12 @@ namespace NN_Samples.Perceptrons
             }
         }
 
-        public Neuron(int numberOfInputs, Random r)
+        public NeuronOld(double[] neuronWeights, Random r)
+            : this(neuronWeights, r.NextDouble() - 0.5)
+        {
+        }
+
+        public NeuronOld(int numberOfInputs, Random r)
         {
             Bias = r.NextDouble() - 0.5;
             Weights = new double[numberOfInputs];

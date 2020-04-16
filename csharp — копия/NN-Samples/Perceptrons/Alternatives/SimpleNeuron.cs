@@ -1,7 +1,7 @@
 ﻿using NN_Samples.Common;
 using System;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Alternatives
 {
     public class SimpleNeuron
     {

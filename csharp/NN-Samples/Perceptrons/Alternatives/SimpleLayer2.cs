@@ -2,28 +2,28 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NN_Samples.Perceptrons
+namespace NN_Samples.Perceptrons.Alternatives
 {
-    public class SimpleLayer
+    public class SimpleLayer2
     {
-        public SimpleNeuron[] Neurons;
+        public SimpleNeuron2[] Neurons;
 
-        public SimpleLayer(double[][] layerWeights)
+        public SimpleLayer2(double[][] layerWeights, Random r)
         {
             int neuronCount = layerWeights.GetLength(0);
-            Neurons = new SimpleNeuron[neuronCount];
+            Neurons = new SimpleNeuron2[neuronCount];
             for (int i = 0; i < neuronCount; i++)
             {
-                Neurons[i] = new SimpleNeuron(layerWeights[i]);
+                Neurons[i] = new SimpleNeuron2(layerWeights[i], r);
             }
         }
 
-        public SimpleLayer(int numberOfNeurons, int numberOfInputs, Random r)
+        public SimpleLayer2(int numberOfNeurons, int numberOfInputs, Random r)
         {
-            Neurons = new SimpleNeuron[numberOfNeurons];
+            Neurons = new SimpleNeuron2[numberOfNeurons];
             for (int i = 0; i < numberOfNeurons; i++)
             {
-                Neurons[i] = new SimpleNeuron(numberOfInputs, r);
+                Neurons[i] = new SimpleNeuron2(numberOfInputs, r);
             }
         }
 
