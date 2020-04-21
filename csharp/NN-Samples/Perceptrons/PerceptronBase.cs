@@ -77,15 +77,13 @@ namespace NN_Samples.Perceptrons
                 {
                     prevLayerDeltas[i] = 0.0;
                 }
-                //int sizen = _weights[k].GetLength(0);
+                //sizen = currentLayerWeights.GetLength(0);
                 //for (int i = 0; i < sizen; i++)
                 //{
-                //    int sizew = _weights[k].GetLength(1);
+                //    int sizew = currentLayerWeights.GetLength(1);
                 //    for (int j = 0; j < sizew; j++)
                 //    {
-                //        double w = _weights[k][i, j];
-                //        double d = _deltas[k][i];
-                //        _deltas[k - 1][j] += w * d * _derivatives[k - 1][j];
+                //        prevLayerDeltas[j] += currentLayerWeights[i, j] * currentLayerDeltas[i] * prevLayerDerivatives[j];
                 //    }
                 //}
 

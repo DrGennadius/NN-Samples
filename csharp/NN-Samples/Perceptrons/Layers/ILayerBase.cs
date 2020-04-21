@@ -19,5 +19,7 @@ namespace NN_Samples.Perceptrons.Layers
         double[] Forward(double[] input);
 
         double[] Forward(ILayerBase layer);
+
+        void UpdateWeights(double alpha, double momentumRate);
     }
 }

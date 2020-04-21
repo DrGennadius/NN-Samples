@@ -150,5 +150,13 @@ namespace NN_Samples.Perceptrons.Layers
         {
             return Forward(layer.Output);
         }
+
+        public void UpdateWeights(double alpha, double momentumRate)
+        {
+            foreach (var neuron in Neurons)
+            {
+                neuron.Update(alpha, momentumRate);
+            }
+        }
     }
 }

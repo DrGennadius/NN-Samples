@@ -96,5 +96,17 @@ namespace NN_Samples.Perceptrons.Neurons
             DerivatedOutput = activationFunction.CalculateDerivative(Output);
             return Output;
         }
+
+        public void Update(double alpha, double momentumRate)
+        {
+            double neuronAlphaDelta = -alpha * Delta;
+            for (int i = 0; i < Weights.Length; i++)
+            {
+                PreviousChanges[i] = neuronAlphaDelta * Input[i] + PreviousChanges[i] * momentumRate;
+                Weights[i] += PreviousChanges[i];
+            }
+            PreviousBiasChange = neuronAlphaDelta + PreviousBiasChange * momentumRate;
+            Bias += PreviousBiasChange;
+        }
     }
 }

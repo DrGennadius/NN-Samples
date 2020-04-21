@@ -1,8 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <RootNamespace>NN_Samples</RootNamespace>
-  </PropertyGroup>
-
-</Project>

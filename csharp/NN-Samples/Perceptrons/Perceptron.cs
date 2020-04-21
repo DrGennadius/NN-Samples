@@ -163,30 +163,16 @@ namespace NN_Samples.Perceptrons
                 }
                 for (int i = 0; i < layer.Length; i++)
                 {
-                    for (int j = 0; j < layer[i].Weights.Length; j++)
+                    var neuron = layer[i];
+                    for (int j = 0; j < neuron.Weights.Length; j++)
                     {
-                        previousLayer[j].Delta += layer[i].Weights[j] * layer[i].Delta * previousLayer[j].DerivatedOutput;
+                        previousLayer[j].Delta += neuron.Weights[j] * neuron.Delta * previousLayer[j].DerivatedOutput;
                     }
                 }
             }
 
             // Correcting weights and bias.
-            for (int i = 0; i < lastLayerIndex + 1; i++)
-            {
-                var layer = Layers[i].Neurons;
-                for (int n = 0; n < layer.Length; n++)
-                {
-                    var neuron = layer[n];
-                    double neuronAlphaDelta = -alpha * neuron.Delta;
-                    for (int w = 0; w < neuron.Weights.Length; w++)
-                    {
-                        neuron.PreviousChanges[w] = neuronAlphaDelta * neuron.Input[w] + neuron.PreviousChanges[w] * MomentumRate;
-                        neuron.Weights[w] += neuron.PreviousChanges[w];
-                    }
-                    neuron.PreviousBiasChange = neuronAlphaDelta + neuron.PreviousBiasChange * MomentumRate;
-                    neuron.Bias += neuron.PreviousBiasChange;
-                }
-            }
+            UpdateWeights(alpha);
         }
 
         public IPerceptron Build()
@@ -255,6 +241,14 @@ namespace NN_Samples.Perceptrons
             for (int i = 1; i < sizes.Length; i++)
             {
                 Layers.Add(new Layer(sizes[i], sizes[i - 1], random));
+            }
+        }
+
+        private void UpdateWeights(double alpha)
+        {
+            foreach (var layer in Layers)
+            {
+                layer.UpdateWeights(alpha, MomentumRate);
             }
         }
     }
