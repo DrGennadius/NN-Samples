@@ -14,7 +14,7 @@ namespace NN_Samples.Perceptrons.Alternatives
     {
         SimpleLayer[] Layers;
 
-        public double[][,] Weights { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public double[][][] Weights { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public double[][] Biases { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public PerceptronTopology Topology
         {

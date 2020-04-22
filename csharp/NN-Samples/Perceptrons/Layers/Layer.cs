@@ -20,16 +20,17 @@ namespace NN_Samples.Perceptrons.Layers
             }
         }
 
-        public double[,] Weights
+        public double[][] Weights
         {
             get
             {
-                double[,] weights = new double[Neurons.Length, Neurons[0].Weights.Length];
+                double[][] weights = new double[Neurons.Length][];
                 for (int n = 0; n < Neurons.Length; n++)
                 {
+                    weights[n] = new double[Neurons[n].Weights.Length];
                     for (int w = 0; w < Neurons[n].Weights.Length; w++)
                     {
-                        weights[n, w] = Neurons[n].Weights[w];
+                        weights[n][w] = Neurons[n].Weights[w];
                     }
                 }
                 return weights;

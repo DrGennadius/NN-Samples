@@ -12,7 +12,7 @@ namespace NN_Samples.Perceptrons.Layers
 
         double[] Output { get; }
 
-        double[,] Weights { get; }
+        double[][] Weights { get; }
 
         ActivationFunction ActivationFunction { get; set; }
 

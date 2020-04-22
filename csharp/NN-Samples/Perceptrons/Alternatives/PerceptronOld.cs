@@ -18,19 +18,20 @@ namespace NN_Samples.Perceptrons.Alternatives
 
         public ActivationFunction ActivationFunction;
 
-        public double[][,] Weights
+        public double[][][] Weights
         {
             get
             {
-                double[][,] weights = new double[Layers.Length][,];
+                double[][][] weights = new double[Layers.Length][][];
                 for (int i = 0; i < Layers.Length; i++)
                 {
-                    weights[i] = new double[Layers[i].Neurons.Length, Layers[i].Neurons[0].Weights.Length];
+                    weights[i] = new double[Layers[i].Neurons.Length][];
                     for (int n = 0; n < Layers[i].Neurons.Length; n++)
                     {
+                        weights[i][n] = new double[Layers[i].Neurons[n].Weights.Length];
                         for (int w = 0; w < Layers[i].Neurons[n].Weights.Length; w++)
                         {
-                            weights[i][n, w] = Layers[i].Neurons[n].Weights[w];
+                            weights[i][n][w] = Layers[i].Neurons[n].Weights[w];
                         }
                     }
                 }

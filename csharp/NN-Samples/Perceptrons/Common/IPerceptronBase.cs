@@ -7,7 +7,7 @@ namespace NN_Samples.Perceptrons.Common
 {
     public interface IPerceptronBase : ICloneable
     {
-        double[][,] Weights { get; set; }
+        double[][][] Weights { get; set; }
         double[][] Biases { get; set; }
         PerceptronTopology Topology { get; set; }
         double MomentumRate { get; set; }

@@ -12,7 +12,7 @@ namespace NN_Samples.Perceptrons
     {
         public IList<ILayerBase> Layers { get; set; }
 
-        public double[][,] Weights
+        public double[][][] Weights
         {
             get
             {

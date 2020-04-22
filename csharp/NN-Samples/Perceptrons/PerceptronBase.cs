@@ -19,26 +19,8 @@ namespace NN_Samples.Perceptrons
         private double[] _input;
         private double _momentumRate;
 
-        public double[][,] Weights
-        {
-            get
-            {
-                double[][,] weights = new double[_weights.GetLength(0)][,];
-                for (int i = 0; i < _weights.GetLength(0); i++)
-                {
-                    weights[i] = new double[_weights.GetLength(1), _weights.GetLength(2)];
-                    for (int n = 0; n < _weights.GetLength(1); n++)
-                    {
-                        for (int w = 0; w < _weights.GetLength(2); w++)
-                        {
-                            weights[i][n, w] = _weights[i][n][w];
-                        }
-                    }
-                }
-                return weights;
-            }
-            set => throw new NotImplementedException();
-        }
+        public double[][][] Weights { get => _weights; set => _weights = value; }
+
         public double[][] Biases { get => _biases; set => _biases = value; }
 
         public double MomentumRate { get => _momentumRate; set => _momentumRate = value; }
@@ -214,13 +196,13 @@ namespace NN_Samples.Perceptrons
             _weights = new double[otherPerceptron.Weights.Length][][];
             for (int i = 0; i < otherPerceptron.Weights.Length; i++)
             {
-                _weights[i] = new double[otherPerceptron.Weights[i].GetLength(0)][];
-                for (int n = 0; n < otherPerceptron.Weights[i].GetLength(0); n++)
+                _weights[i] = new double[otherPerceptron.Weights[i].Length][];
+                for (int n = 0; n < otherPerceptron.Weights[i].Length ; n++)
                 {
-                    _weights[i][n] = new double[otherPerceptron.Weights[i].GetLength(1)];
-                    for (int w = 0; w < otherPerceptron.Weights[i].GetLength(1); w++)
+                    _weights[i][n] = new double[otherPerceptron.Weights[i][n].Length];
+                    for (int w = 0; w < otherPerceptron.Weights[i][n].Length; w++)
                     {
-                        _weights[i][n][w] = otherPerceptron.Weights[i][n, w];
+                        _weights[i][n][w] = otherPerceptron.Weights[i][n][w];
                     }
                 }
             }
