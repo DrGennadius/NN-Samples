@@ -7,7 +7,7 @@ using NN_Samples.Perceptrons.Neurons;
 
 namespace NN_Samples.Perceptrons.Layers
 {
-    public class Layer : ILayerBase
+    public struct Layer : ILayerBase
     {
         public ActivationFunction ActivationFunction { get; set; }
         public Neuron[] Neurons { get; set; }

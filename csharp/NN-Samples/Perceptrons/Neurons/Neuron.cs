@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NN_Samples.Perceptrons.Neurons
 {
-    public class Neuron : INeuron
+    public struct Neuron : INeuron
     {
         public double[] Weights { get; set; }
 
@@ -33,6 +33,10 @@ namespace NN_Samples.Perceptrons.Neurons
             {
                 PreviousChanges[i] = 0;
             }
+            Input = new double[0];
+            Output = 0.0;
+            DerivatedOutput = 0.0;
+            Delta = 0.0;
         }
 
         public Neuron(double[] neuronWeights, Random random)
@@ -54,6 +58,10 @@ namespace NN_Samples.Perceptrons.Neurons
             {
                 PreviousChanges[i] = 0;
             }
+            Input = new double[0];
+            Output = 0.0;
+            DerivatedOutput = 0.0;
+            Delta = 0.0;
         }
 
         public Neuron(INeuron neuron)
@@ -63,6 +71,9 @@ namespace NN_Samples.Perceptrons.Neurons
             PreviousChanges = neuron.PreviousChanges;
             PreviousBiasChange = neuron.PreviousBiasChange;
             Delta = neuron.Delta;
+            Input = new double[0];
+            Output = 0.0;
+            DerivatedOutput = 0.0;
         }
 
         public double Forward(double[] input)

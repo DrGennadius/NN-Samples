@@ -9,19 +9,39 @@ namespace NN_Samples.Perceptrons
 {
     public class PerceptronBase : IPerceptronBase
     {
-        private double[][,] _weights;
-        private double[][,] _prevWeightChanges;
+        private double[][][] _weights;
+        private double[][][] _prevWeightChanges;
         private double[][] _biases;
         private double[][] _biasChanges;
         private double[][] _outputs;
         private double[][] _derivatives;
         private double[][] _deltas;
         private double[] _input;
+        private double _momentumRate;
 
-        public double[][,] Weights { get => _weights; set => _weights = value; }
+        public double[][,] Weights
+        {
+            get
+            {
+                double[][,] weights = new double[_weights.GetLength(0)][,];
+                for (int i = 0; i < _weights.GetLength(0); i++)
+                {
+                    weights[i] = new double[_weights.GetLength(1), _weights.GetLength(2)];
+                    for (int n = 0; n < _weights.GetLength(1); n++)
+                    {
+                        for (int w = 0; w < _weights.GetLength(2); w++)
+                        {
+                            weights[i][n, w] = _weights[i][n][w];
+                        }
+                    }
+                }
+                return weights;
+            }
+            set => throw new NotImplementedException();
+        }
         public double[][] Biases { get => _biases; set => _biases = value; }
 
-        public double MomentumRate { get; set; }
+        public double MomentumRate { get => _momentumRate; set => _momentumRate = value; }
         public PerceptronTopology Topology { get; set; }
 
         public PerceptronBase()
@@ -37,7 +57,7 @@ namespace NN_Samples.Perceptrons
         public PerceptronBase(PerceptronTopology topology, double momentumRate = 0.5)
         {
             Topology = topology;
-            MomentumRate = momentumRate;
+            _momentumRate = momentumRate;
             Initialize();
         }
 
@@ -65,38 +85,27 @@ namespace NN_Samples.Perceptrons
 
             // Calculate each previous delta based on the current one
             // by multiplying by the transposed matrix.
-            for (int k = lastLayerIndex; k > 0; k--)
+            for (int i = lastLayerIndex; i > 0; i--)
             {
-                var prevLayerDeltas = _deltas[k - 1];
-                var currentLayerDeltas = _deltas[k];
-                var prevLayerWeights = _weights[k - 1];
-                var currentLayerWeights = _weights[k];
-                var prevLayerDerivatives = _derivatives[k - 1];
-                int sizen = prevLayerWeights.GetLength(0);
-                for (int i = 0; i < sizen; i++)
+                var prevLayerDeltas = _deltas[i - 1];
+                var currentLayerDeltas = _deltas[i];
+                var prevLayerWeights = _weights[i - 1];
+                var currentLayerWeights = _weights[i];
+                var prevLayerDerivatives = _derivatives[i - 1];
+                int sizen = prevLayerWeights.Length;
+                for (int n = 0; n < sizen; n++)
                 {
-                    prevLayerDeltas[i] = 0.0;
+                    prevLayerDeltas[n] = 0.0;
                 }
-                //sizen = currentLayerWeights.GetLength(0);
-                //for (int i = 0; i < sizen; i++)
-                //{
-                //    int sizew = currentLayerWeights.GetLength(1);
-                //    for (int j = 0; j < sizew; j++)
-                //    {
-                //        prevLayerDeltas[j] += currentLayerWeights[i, j] * currentLayerDeltas[i] * prevLayerDerivatives[j];
-                //    }
-                //}
-
-                int sizew = currentLayerWeights.GetLength(1);
-                for (int i = 0; i < sizew; i++)
+                sizen = currentLayerWeights.Length;
+                for (int n = 0; n < sizen; n++)
                 {
-                    double prevDelta = 0;
-                    sizen = currentLayerWeights.GetLength(0);
-                    for (int j = 0; j < sizen; j++)
+                    var currentNeuronWeights = currentLayerWeights[n];
+                    int sizew = currentNeuronWeights.Length;
+                    for (int w = 0; w < sizew; w++)
                     {
-                        prevDelta += currentLayerWeights[j, i] * currentLayerDeltas[j];
+                        prevLayerDeltas[w] += currentNeuronWeights[w] * currentLayerDeltas[n] * prevLayerDerivatives[w];
                     }
-                    prevLayerDeltas[i] = prevDelta * prevLayerDerivatives[i];
                 }
             }
 
@@ -105,19 +114,22 @@ namespace NN_Samples.Perceptrons
             var layerBiases = _biases[0];
             var layerDeltas = _deltas[0];
             var layerPrevWeightChanges = _prevWeightChanges[0];
-            int sizeN = layerWeights.GetLength(0);
+            var layerBiasChanges = _biasChanges[0];
+            int sizeN = layerWeights.Length;
             for (int n = 0; n < sizeN; n++)
             {
                 var alphaDelta = -alpha * layerDeltas[n];
-                int sizeW = layerWeights.GetLength(1);
+                var neuronWeights = layerWeights[n];
+                var neuronPrevWeightChanges = layerPrevWeightChanges[n];
+                int sizeW = neuronWeights.Length;
                 for (int w = 0; w < sizeW; w++)
                 {
-                    double weightChange = alphaDelta * _input[w] + layerPrevWeightChanges[n, w] * MomentumRate;
-                    layerPrevWeightChanges[n, w] = weightChange;
-                    layerWeights[n, w] += weightChange;
+                    double weightChange = alphaDelta * _input[w] + neuronPrevWeightChanges[w] * _momentumRate;
+                    neuronPrevWeightChanges[w] = weightChange;
+                    neuronWeights[w] += weightChange;
                 }
-                double biasChange = alphaDelta + _biasChanges[0][n] * MomentumRate;
-                _biasChanges[0][n] = biasChange;
+                double biasChange = alphaDelta + layerBiasChanges[n] * _momentumRate;
+                layerBiasChanges[n] = biasChange;
                 layerBiases[n] += biasChange;
             }
             int sizeL = _weights.Length;
@@ -128,19 +140,22 @@ namespace NN_Samples.Perceptrons
                 layerBiases = _biases[i];
                 layerDeltas = _deltas[i];
                 layerPrevWeightChanges = _prevWeightChanges[i];
-                sizeN = layerWeights.GetLength(0);
+                layerBiasChanges = _biasChanges[i];
+                sizeN = layerWeights.Length;
                 for (int n = 0; n < sizeN; n++)
                 {
                     var alphaDelta = -alpha * layerDeltas[n];
-                    int sizeW = layerWeights.GetLength(1);
+                    var neuronWeights = layerWeights[n];
+                    var neuronPrevWeightChanges = layerPrevWeightChanges[n];
+                    int sizeW = neuronWeights.Length;
                     for (int w = 0; w < sizeW; w++)
                     {
-                        double weightChange = alphaDelta * prevOutputs[w] + layerPrevWeightChanges[n, w] * MomentumRate;
-                        _prevWeightChanges[i][n, w] = weightChange;
-                        layerWeights[n, w] += weightChange;
+                        double weightChange = alphaDelta * prevOutputs[w] + neuronPrevWeightChanges[w] * _momentumRate;
+                        neuronPrevWeightChanges[w] = weightChange;
+                        neuronWeights[w] += weightChange;
                     }
-                    double biasChange = alphaDelta + _biasChanges[i][n] * MomentumRate;
-                    _biasChanges[i][n] = biasChange;
+                    double biasChange = alphaDelta + layerBiasChanges[n] * _momentumRate;
+                    layerBiasChanges[n] = biasChange;
                     layerBiases[n] += biasChange;
                 }
             }
@@ -165,14 +180,15 @@ namespace NN_Samples.Perceptrons
                 var layerDerivatives = _derivatives[i];
                 var layerBiases = _biases[i];
                 var layerWeights = _weights[i];
-                int sizeN = layerWeights.GetLength(0);
+                int sizeN = layerWeights.Length;
                 for (int n = 0; n < sizeN; n++)
                 {
                     double sum = layerBiases[n];
-                    int sizeW = layerWeights.GetLength(1);
+                    var neuronWeights = layerWeights[n];
+                    int sizeW = neuronWeights.Length;
                     for (int w = 0; w < sizeW; w++)
                     {
-                        sum += layerWeights[n, w] * input[w];
+                        sum += neuronWeights[w] * input[w];
                     }
                     layerOutputs[n] = activationFunction(sum);
                     layerDerivatives[n] = derivativeActivationFunction(layerOutputs[n]);
@@ -195,15 +211,16 @@ namespace NN_Samples.Perceptrons
 
         public void TransferFrom(IPerceptronBase otherPerceptron)
         {
-            _weights = new double[otherPerceptron.Weights.Length][,];
+            _weights = new double[otherPerceptron.Weights.Length][][];
             for (int i = 0; i < otherPerceptron.Weights.Length; i++)
             {
-                _weights[i] = new double[otherPerceptron.Weights[i].GetLength(0), otherPerceptron.Weights[i].GetLength(1)];
+                _weights[i] = new double[otherPerceptron.Weights[i].GetLength(0)][];
                 for (int n = 0; n < otherPerceptron.Weights[i].GetLength(0); n++)
                 {
+                    _weights[i][n] = new double[otherPerceptron.Weights[i].GetLength(1)];
                     for (int w = 0; w < otherPerceptron.Weights[i].GetLength(1); w++)
                     {
-                        _weights[i][n, w] = otherPerceptron.Weights[i][n, w];
+                        _weights[i][n][w] = otherPerceptron.Weights[i][n, w];
                     }
                 }
             }
@@ -217,7 +234,7 @@ namespace NN_Samples.Perceptrons
                 }
             }
             Topology = otherPerceptron.Topology;
-            MomentumRate = otherPerceptron.MomentumRate;
+            _momentumRate = otherPerceptron.MomentumRate;
             int[] sizes = otherPerceptron.Topology.GetSizes();
             InitializeInternalValues(sizes);
         }
@@ -232,18 +249,19 @@ namespace NN_Samples.Perceptrons
                 sizes[i + 1] = otherWeights[i].Length;
             }
             Topology = new PerceptronTopology(sizes, perceptronOld.GetActivationFunction());
-            _weights = new double[otherWeights.Length][,];
+            _weights = new double[otherWeights.Length][][];
             double[][] otherBiases = perceptronOld.GetBiases();
             bool haveBiases = otherBiases.Length > 0;
             _biases = haveBiases ? perceptronOld.GetBiases() : new double[otherWeights.Length][];
             for (int i = 1; i < sizes.Length; i++)
             {
-                _weights[i - 1] = new double[sizes[i], sizes[i - 1]];
+                _weights[i - 1] = new double[sizes[i]][];
                 for (int n = 0; n < sizes[i]; n++)
                 {
+                    _weights[i - 1][n] = new double[sizes[i - 1]];
                     for (int w = 0; w < sizes[i - 1]; w++)
                     {
-                        _weights[i - 1][n, w] = otherWeights[i - 1][n][w];
+                        _weights[i - 1][n][w] = otherWeights[i - 1][n][w];
                     }
                 }
                 if (!haveBiases)
@@ -251,7 +269,7 @@ namespace NN_Samples.Perceptrons
                     _biases[i - 1] = new double[sizes[i]];
                 }
             }
-            MomentumRate = perceptronOld.GetMomentumRate();
+            _momentumRate = perceptronOld.GetMomentumRate();
             InitializeInternalValues(sizes);
         }
 
@@ -267,18 +285,19 @@ namespace NN_Samples.Perceptrons
             int[] sizes = Topology.GetSizes();
             int layerCount = sizes.Length - 1;
 
-            _weights = new double[layerCount][,];
+            _weights = new double[layerCount][][];
             _biases = new double[layerCount][];
 
             for (int i = 1; i < sizes.Length; i++)
             {
-                _weights[i - 1] = new double[sizes[i], sizes[i - 1]];
+                _weights[i - 1] = new double[sizes[i]][];
                 _biases[i - 1] = new double[sizes[i]];
                 for (int n = 0; n < sizes[i]; n++)
                 {
+                    _weights[i - 1][n] = new double[sizes[i - 1]];
                     for (int w = 0; w < sizes[i - 1]; w++)
                     {
-                        _weights[i - 1][n, w] = random.NextDouble() - 0.5;
+                        _weights[i - 1][n][w] = random.NextDouble() - 0.5;
                     }
                     _biases[i - 1][n] = random.NextDouble() - 0.5;
                 }
@@ -291,7 +310,7 @@ namespace NN_Samples.Perceptrons
         {
             int layerCount = sizes.Length - 1;
 
-            _prevWeightChanges = new double[layerCount][,];
+            _prevWeightChanges = new double[layerCount][][];
             _biasChanges = new double[layerCount][];
             _outputs = new double[layerCount][];
             _derivatives = new double[layerCount][];
@@ -299,13 +318,14 @@ namespace NN_Samples.Perceptrons
 
             for (int i = 1; i < sizes.Length; i++)
             {
-                _prevWeightChanges[i - 1] = new double[sizes[i], sizes[i - 1]];
+                _prevWeightChanges[i - 1] = new double[sizes[i]][];
                 _biasChanges[i - 1] = new double[sizes[i]];
                 for (int n = 0; n < sizes[i]; n++)
                 {
+                    _prevWeightChanges[i - 1][n] = new double[sizes[i - 1]];
                     for (int w = 0; w < sizes[i - 1]; w++)
                     {
-                        _prevWeightChanges[i - 1][n, w] = 0;
+                        _prevWeightChanges[i - 1][n][w] = 0;
                     }
                     _biasChanges[i - 1][n] = 0;
                 }
