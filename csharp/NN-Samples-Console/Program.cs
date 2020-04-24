@@ -12,8 +12,8 @@ namespace NN_Samples_Console
     {
         static void Main(string[] args)
         {
-            //PerceptronTypeTest.Test();
-            //PerceptronActivationFunctionTest.Test();
+            PerceptronTypeTest.Test();
+            PerceptronActivationFunctionTest.Test();
             PerceptronTimeTest.Test();
             //NormalizeAndScaleTest();
 

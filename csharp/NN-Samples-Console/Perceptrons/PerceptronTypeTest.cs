@@ -20,24 +20,35 @@ namespace NN_Samples_Console.Perceptrons
 
         public static void Test()
         {
+            Console.WriteLine("\n#########################");
+            Console.WriteLine("#### Perceptron Types ###");
+            Console.WriteLine("#########################");
+
             Comparison();
 
-            //TestAND();
-            //TestNAND();
-            //TestOR();
-            //TestXOR();
-            //TestMultiplication();
-            //TestSimpleNumbers();
+            var perceptronOld = new PerceptronOld(2, 5, 1);
+            var perceptronBase = new PerceptronBase(perceptronOld);
+            var perceptron = new Perceptron(perceptronBase);
 
-            //var perceptronOld = new PerceptronOld(2, 5, 1);
-            //var perceptronBase = new PerceptronBase(perceptronOld);
+            TestLogic(perceptronOld, "Perceptron Old");
+            TestLogic(perceptronBase, "Perceptron Base");
+            TestLogic(perceptron, "Perceptron");
 
-            //TestPerceptronBase(perceptronOld, "Perceptron Old");
-            //TestPerceptronBase(perceptronBase, "Perceptron Base");
+            perceptronOld = new PerceptronOld(2, 64, 1);
+            perceptronBase = new PerceptronBase(perceptronOld);
+            perceptron = new Perceptron(perceptronBase);
+            TestMultiplication(perceptron, TrainData.GenerateDataMultiplication(), "Perceptron Old Multiplication");
+            TestMultiplication(perceptron, TrainData.GenerateDataMultiplication(), "Perceptron Base Multiplication");
+            TestMultiplication(perceptron, TrainData.GenerateDataMultiplication(), "Perceptron Multiplication");
 
-            //RunAlternativeVariant1();
+            perceptronOld = new PerceptronOld(35, 128, 32, 1);
+            perceptronBase = new PerceptronBase(perceptronOld);
+            perceptron = new Perceptron(perceptronBase);
+            TestSimpleNumbers(perceptronOld, TrainData.GenerateDataSimpleNumbers(), "Perceptron Old SimpleNumbers");
+            TestSimpleNumbers(perceptronBase, TrainData.GenerateDataSimpleNumbers(), "Perceptron Base SimpleNumbers");
+            TestSimpleNumbers(perceptron, TrainData.GenerateDataSimpleNumbers(), "Perceptron SimpleNumbers");
 
-
+            RunAlternativeVariant1();
         }
 
         public static void TestAND()
@@ -170,15 +181,13 @@ namespace NN_Samples_Console.Perceptrons
             TestReadyLogicModel(perceptron, activationFunctionType);
         }
 
-        public static void TestPerceptronBase(IPerceptronBase perceptron, string title)
+        public static void TestLogic(IPerceptronBase perceptron, string title)
         {
             Console.WriteLine("\n###" + title);
             TestLogic(perceptron, TrainData.GenerateDataAND(), "AND");
             TestLogic(perceptron, TrainData.GenerateDataNAND(), "NAND");
             TestLogic(perceptron, TrainData.GenerateDataOR(), "OR");
             TestLogic(perceptron, TrainData.GenerateDataXOR(), "XOR");
-            TestMultiplication(perceptron, TrainData.GenerateDataMultiplication(), "Multiplication");
-            TestSimpleNumbers(perceptron, TrainData.GenerateDataSimpleNumbers(), "SimpleNumbers");
         }
 
         public static void TestMultiplication(IPerceptronBase perceptron, TrainData trainData, string title)
@@ -404,6 +413,8 @@ namespace NN_Samples_Console.Perceptrons
 
         public static void Comparison()
         {
+            Console.WriteLine("\n\n#### Comparison Test");
+
             var perceptronTrainer = new PerceptronTrainer();
 
             var perceptronOld = new PerceptronOld(new int[] { 2, 5, 1 }, new Random(62784123));
@@ -411,59 +422,23 @@ namespace NN_Samples_Console.Perceptrons
             var perceptron = new Perceptron(perceptronOld);
             var perceptronBase = new PerceptronBase(perceptron);
 
-            //TrainStats[] trainStats = perceptronTrainer.PairTrain(
-            //    (IPerceptronBase)perceptronOld.Clone(),
-            //    (IPerceptronBase)perceptronBase.Clone(),
-            //    TrainData.GenerateDataXOR(),
-            //    0.5, 1e-6, 250000, true, 10
-            //);
-            //Console.WriteLine(trainStats[0]);
-            //Console.WriteLine(trainStats[1]);
+            double[] errors = new double[3]; 
 
-            //trainStats = perceptronTrainer.PairTrain(
-            //    (IPerceptronBase)perceptronOld.Clone(),
-            //    (IPerceptronBase)perceptron.Clone(),
-            //    TrainData.GenerateDataXOR(),
-            //    0.5, 1e-6, 250000, true, 10
-            //);
-            //Console.WriteLine(trainStats[0]);
-            //Console.WriteLine(trainStats[1]);
+            TrainStats singleTrainStats = perceptronTrainer.Train(perceptronOld, TrainData.GenerateDataXOR(), 0.5, 1e-6, 500000, false);
+            Console.WriteLine("{0}: {1}", "Perceptron Old", singleTrainStats);
+            errors[0] = singleTrainStats.LastError;
 
-            //trainStats = perceptronTrainer.PairTrain(
-            //    (IPerceptronBase)perceptronBase.Clone(),
-            //    (IPerceptronBase)perceptron.Clone(),
-            //    TrainData.GenerateDataXOR(),
-            //    0.5, 1e-6, 250000, true, 10
-            //);
-            //Console.WriteLine(trainStats[0]);
-            //Console.WriteLine(trainStats[1]);
+            singleTrainStats = perceptronTrainer.Train(perceptronBase, TrainData.GenerateDataXOR(), 0.5, 1e-6, 500000, false);
+            Console.WriteLine("{0}: {1}", "Perceptron Base", singleTrainStats);
+            errors[1] = singleTrainStats.LastError;
 
-            TrainStats singleTrainStats = perceptronTrainer.Train(perceptronOld, TrainData.GenerateDataXOR(), 0.5, 1e-6, 250000, true, 10);
-            Console.WriteLine(singleTrainStats);
+            singleTrainStats = perceptronTrainer.Train(perceptron, TrainData.GenerateDataXOR(), 0.5, 1e-6, 500000, false);
+            Console.WriteLine("{0}: {1}", "Perceptron", singleTrainStats);
+            errors[2] = singleTrainStats.LastError;
 
-            singleTrainStats = perceptronTrainer.Train(perceptronBase, TrainData.GenerateDataXOR(), 0.5, 1e-6, 250000, true, 10);
-            Console.WriteLine(singleTrainStats);
+            bool isValid = errors[0] == errors[1] && errors[0] == errors[2];
 
-            singleTrainStats = perceptronTrainer.Train(perceptron, TrainData.GenerateDataXOR(), 0.5, 1e-6, 250000, true, 10);
-            Console.WriteLine(singleTrainStats);
-
-            //trainStats = perceptronTrainer.PairTrain(
-            //    (IPerceptronBase)perceptronOld.Clone(),
-            //    (IPerceptronBase)perceptronBase.Clone(),
-            //    TrainData.GenerateDataXOR(),
-            //    0.5, 1e-6, 250000, true, 10
-            //);
-            //Console.WriteLine(trainStats[0]);
-            //Console.WriteLine(trainStats[1]);
-            //Console.WriteLine("----------");
-            //TrainStats trainStats1 = perceptronTrainer.Train((IPerceptronBase)perceptronOld.Clone(), TrainData.GenerateDataXOR(), 0.5, 1e-6, 250000, true, 10);
-            //Thread.Sleep(1000);
-            //Console.WriteLine("----------");
-            //TrainStats trainStats2 = perceptronTrainer.Train((IPerceptronBase)perceptron.Clone(),TrainData.GenerateDataXOR(), 0.5, 1e-6, 250000, true, 10);
-            //Console.WriteLine(trainStats1);
-            //Console.WriteLine(trainStats2);
-            //trainStats2 = perceptronTrainer.Train((IPerceptronBase)perceptronBase.Clone(), TrainData.GenerateDataXOR(), 0.5, 1e-6, 250000, true, 10);
-            //Console.WriteLine(trainStats2);
+            Console.WriteLine(isValid ? "Is valid" : "IS NOT VALID!!!");
         }
 
         public enum TestReadyModelMode
